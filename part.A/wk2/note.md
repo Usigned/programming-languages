@@ -12,8 +12,21 @@ sml
 syntax -- 语法
 
 senmantics -- 语义
-- 程序执行前类型检查（静态环境）
-- 运行时动态环境
+
+- Type-chek
+- evaluation
+
+静态环境 - 类型检查
+
+动态环境 - 赋值(evaluate)
+
+Variable Binding -- 绑定？不知道怎么翻译，貌似是变量定义
+
+```
+val x = 34
+```
+
+首先在静态环境中检查x类型为int，之后在动态环境中给x赋值为34
 
 ---
 
@@ -28,7 +41,15 @@ senmantics -- 语义
 3. evaluation rules (used only on things that type-check)
    - produce a value (or exception etc)
 
+> 查看任何表达式时都看这三项属性
+>
+> - 语法
+> - 类型检查规则
+> - 赋值规则
+
 **变量(variable)**
+
+> 如何使用，而不是如何binding
 
 - syntax: 字母/数字序列
 - type-check: 在当前的静态环境中查找其类型，未找到则失败
@@ -57,7 +78,7 @@ senmantics -- 语义
 - 所有values都是表达式(expression)
 - 非所有expressions都是values
 
-- 每个value在初始阶段都赋值给自己
+- 每个value在初始阶段都在动态环境中赋值给自己
 
 - examples:
   - 34, 17,42 -> int
@@ -79,6 +100,7 @@ Reasons
    - afterwards, the expression producing the value is irrelevant
 2. no way to "assign to" a variale
    - can only shadow
+   - ml中变量都是不可变的，一旦在动态环境中赋值就无法改变，上述表达式第三句会重新创建一个动态环境，并将之前动态环境中的a shadow掉
 
 # 函数
 
@@ -87,7 +109,8 @@ Reasons
 - syntax: `fun x0 (x1 : t1, ..., xn :tn) = e`
 - evaluation: **a function is a value**
   - add **x0** to env
-
+  - Body不执行
+  
 - type-check
 
   - 如果e类型检查通过则添加binding `x0 : (t1 * ... * tn) -> t`  
@@ -96,8 +119,8 @@ Reasons
 
     - 静态环境中已经有的binding
     - 参数`x1 : t1, ..., xn :tn`
-
-    - 自己`x0 : (t1 * ... * tn) -> t` (以便递归调用)
+  - 自己`x0 : (t1 * ... * tn) -> t` (以便递归调用)
+  - 
 
 ## calls
 
