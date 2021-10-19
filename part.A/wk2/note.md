@@ -9,9 +9,9 @@ sml
 
 ---
 
-syntax -- 语法
+syntax -- 语法 how to write
 
-senmantics -- 语义
+senmantics -- 语义 what it mean
 
 - Type-chek
 - evaluation
@@ -47,9 +47,15 @@ val x = 34
 > - 类型检查规则
 > - 赋值规则
 
+**条件(condition)**
+
+- syntax: `if` statement `then` value1 `else` value2
+- type-check: value1和value2应该有相同类型，statement应该为bool类型
+- evaluation:根据条件表达式值为value1或value2
+
 **变量(variable)**
 
-> 如何使用，而不是如何binding
+> 如何使用，比如在表达式中使用变量，而不是如何binding
 
 - syntax: 字母/数字序列
 - type-check: 在当前的静态环境中查找其类型，未找到则失败
@@ -85,6 +91,11 @@ val x = 34
   - true/false -> bool
   - () -> unit
 
+**等于(判断)**
+
+- a `=` b
+- 
+
 # 赋值
 
 ```
@@ -95,7 +106,7 @@ val a = 2
 
 Reasons
 
-1. expressions in variable bindings are evaluated eagerly
+1. expressions in variable bindings are evaluated **eagerly**
    - before the variable binding "finishes"
    - afterwards, the expression producing the value is irrelevant
 2. no way to "assign to" a variale
@@ -132,3 +143,7 @@ Reasons
   - `e1, ..., en`是`t1 * ... * tn`类型的
 
   - 如果上述两点通过则检查`e0 (e1, ..., en)`是t类型的
+
+# REPL
+
+sml就是repl，文件只是使用repl的一种方法。

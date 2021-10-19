@@ -13,6 +13,9 @@ val z = (x + y) + (y + 2);
 val q = z + 1;
 (* dynamic env x --> 34, y--> 17, z --> 70, w --> 71 *)
 
+val abs_of_z = if z < 0 then 0 - z else z;
+
+val abs_z = abs(z);
 
 fun pow(x : int, y : int) = 
     if y = 0
