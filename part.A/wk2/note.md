@@ -117,21 +117,19 @@ Reasons
 
 ## Binding
 
-- syntax: `fun x0 (x1 : t1, ..., xn :tn) = e`
+- syntax: `fun x0 (x1 : t1, ..., xn :tn) = body`
 - evaluation: **a function is a value**
-  - add **x0** to env
+  - 将函数名**x0**加入环境中
   - Body不执行
-  
 - type-check
-
-  - 如果e类型检查通过则添加binding `x0 : (t1 * ... * tn) -> t`  
-
-  - e类型需要和静态环境中的`t`匹配，且只能包含以下内容
+  - 检查`body`中内容
+  - 如果body类型检查通过则添加binding `x0 : t1 * ... * tn -> t`  
+    - `*`代表分隔符号
+  - body类型需要和静态环境中的`t`匹配，且只能包含以下内容
 
     - 静态环境中已经有的binding
     - 参数`x1 : t1, ..., xn :tn`
-  - 自己`x0 : (t1 * ... * tn) -> t` (以便递归调用)
-  - 
+  - 自己`x0 : t1 * ... * tn)-> t` (以便递归调用)
 
 ## calls
 
@@ -139,7 +137,7 @@ Reasons
 
 - type-check
 
-  - `e0`是`(t1 * ... * tn) -> t`形式的
+  - `e0`是`t1 * ... * tn -> t`形式的
   - `e1, ..., en`是`t1 * ... * tn`类型的
 
   - 如果上述两点通过则检查`e0 (e1, ..., en)`是t类型的
@@ -147,3 +145,56 @@ Reasons
 # REPL
 
 sml就是repl，文件只是使用repl的一种方法。
+
+> read-evaluate-print-loop
+
+# Pairs/Tuples
+
+- syntax
+  - binding: `val pair = (e1, e2)`
+  - call:
+    - 整个调用同变量
+    - 调用单个元素`#1 pair`，序号从1开始
+- evaluate:
+  - `val pair = (1, true)`整个变量产生一个binding `(1,true) :int * bool`
+- type-checking:
+  - 此时会确定元组长度
+
+- 嵌套元组
+
+  | value            | type                 |
+  | ---------------- | -------------------- |
+  | `(7, true, 9)`   | `int * bool * int`   |
+  | `((7, true), 9)` | `(int * bool) * int` |
+  | `(7, (true, 9))` | `int * (bool * int)` |
+
+  > 类型表示中 `*` 代表分隔，`()`表示嵌套关系
+
+# List
+
+可变长，但是只能同类型
+
+- 创建syntax:
+  - 空list`[]`，类型为`'a list` (alpha list)
+  - 有元素list`[e1, e2, e3]`，类型`t list`其中`t`为类型
+    - `[1,2,3] : int list`
+  - 给定一个`t`类型的变量`e1`，和一个`t`类型的数组`e2`
+    - `e1 :: e2`返回一个新数组，将`e1`放在开头
+
+- 内置方法
+
+  - `null` 判断给定list是否为空
+    - `null [];`
+
+  - `hd`返回第一个元素或抛出异常
+  - `tl`返回除了第一个元素之外剩余元素的list
+
+  > `hd` -> head
+  >
+  > `tl` -> tail
+
+- 由于ml没循环，遍历list需要递归
+
+# Let表达式
+
+局部变量
