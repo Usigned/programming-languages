@@ -118,7 +118,7 @@ Reasons
 ## Binding
 
 - syntax: `fun x0 (x1 : t1, ..., xn :tn) = body`
-- evaluation: **a function is a value**
+- evaluation: 函数本身就是一个值 (x0)
   - 将函数名**x0**加入环境中
   - Body不执行
 - type-check
@@ -155,6 +155,7 @@ sml就是repl，文件只是使用repl的一种方法。
   - call:
     - 整个调用同变量
     - 调用单个元素`#1 pair`，序号从1开始
+      - 空格可不要
 - evaluate:
   - `val pair = (1, true)`整个变量产生一个binding `(1,true) :int * bool`
 - type-checking:
@@ -176,11 +177,12 @@ sml就是repl，文件只是使用repl的一种方法。
 
 - 创建syntax:
   - 空list`[]`，类型为`'a list` (alpha list)
+    - 可以是任何类型，有点像泛型
   - 有元素list`[e1, e2, e3]`，类型`t list`其中`t`为类型
     - `[1,2,3] : int list`
   - 给定一个`t`类型的变量`e1`，和一个`t`类型的数组`e2`
-    - `e1 :: e2`返回一个新数组，将`e1`放在开头
-
+    - `e1 :: e2`返回一个新数组，将`e1`放在开头（"cons"）
+  
 - 内置方法
 
   - `null` 判断给定list是否为空
