@@ -197,6 +197,131 @@ sml就是repl，文件只是使用repl的一种方法。
 
 - 由于ml没循环，遍历list需要递归
 
+- 两个列表相加方法 `e1 @ e2`，其中两个元素是同类型列表
+
 # Let表达式
 
-局部变量
+引入局部变量
+
+- syntax: `let` b1 b2 ... bn `in` e `end`
+  - bi
+  - e -> body
+
+- tc: 检查每一个binding和e，bi只能用先前已有的binding，e能用所有
+- eval: bi和e放入一个有先前binding的动态环境，整个表达式的值为e的值
+
+scope-变量的作用范围
+
+# 嵌套函数
+
+private function
+
+```
+fun function1 (params) = 
+	let
+		fun function2 (params) = 
+			....
+    in
+    	body
+    end
+```
+
+此时function2不能被外界访问
+
+# 效率分析
+
+避免递归中的重复计算
+
+```
+if hd xs > bad_max (tl xs)
+then hd xs
+else bad_max(tl xs)
+```
+
+上述bad_max(tl xs)可以避免
+
+# Options
+
+处理异常情况（非抛出异常），比如当list为空时
+
+> 语法类似指针，实则完全不一样，其在动态环境中的值是固定的
+>
+> 其主要目的应该是引入NONE
+
+- 类型：`t option`, t是类型
+
+- building:
+  - `NONE` -> type `'a option'`
+  - `SOME e` -> type `t option` 
+
+- accessing:
+  - `isSome`  类型为 `'a option -> bool`：判断option是否为`NONE`
+  - `valOf` 类型为 `'a option -> 'a`：读取option的值，为`NONE`时抛出异常
+
+# 布尔运算
+
+- `andalso`
+  - 运算符
+- `orelse`
+  - 运算符
+- `not`
+  - 是个函数类型`bool -> bool`
+
+- 一样有短路
+
+# 比较运算符
+
+- `=` 等于
+- `<>`不等于
+- `> < >= <=`
+
+- `> < >= <=`可用于`int`或`real`，但是不能`int`和`real`比较
+  - `3.0 > 2`报错
+- `= <>`不能用于`real`，原因和浮点数不精确有关
+
+# 不可变的好处
+
+ML中变量，元组，列表都**不可变** -- 函数式编程核心思想
+
+好处：
+
+对于用户来说**copy和alias完全等价，因为变量不可变**
+
+> aliasing == object identity
+
+```
+fun sort_pair(pr: int * int) =
+	if #1pr < #2pr
+	then pr
+	else (#2pr,#1pr)
+
+fun sort_pair(pr: int * int) = 
+	if #1pr < #2pr
+	then (#1pr,#2pr)
+	else (#2pr,#1pr)
+```
+
+- **在ML中两种方法效果完全一样**
+  - **因为变量不可变所以是alias或copy都一样**（不可变）
+  - 故在ML中使用alias很安全，使用者不用关心使用alias带来的麻烦
+  - 直接使用alias，可以带来很大的性能改善
+    - 比如`tl`函数就是返回列表的一个alias
+
+- 有可变变量的语言中就完全不一样
+  - 比如python中经常需要使用`deepcopy`来创建镜像
+
+![image-20211023200653350](https://raw.githubusercontent.com/Usigned/pic-typora/main/images/image-20211023200653350.png)
+
+- 代码中`allowedUsers`将一个private变量的引用泄露到外界
+
+# 如何学习编程语言
+
+1. syntax：语法
+2. **semantics**：语言(type-check, evaluation)
+3. **Idioms**：典型使用方法，比如何时使用嵌套函数？（需要private函数时）
+4. libraries：类库
+5. tools：REPL，debugger，formatter等
+   - not actually part of the lan
+
+> 课程主要注重于semantic和idiom，因为其与编程语言特性相关
+

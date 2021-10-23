@@ -11,6 +11,22 @@ fun bad_max (xs : int list) =
     then hd xs
     else bad_max(tl xs)
 
+(* fix it my self *)
+fun fix_bad_max(xs : int list) = 
+    if null xs
+    then 0
+    else if null (tl xs)
+    then hd xs
+    else 
+        let
+            val temp = fix_bad_max(tl xs)
+        in
+            if hd xs > temp
+            then hd xs
+            else temp
+        end
+
+
 (* badly named: evaluates to 0 on empty list *)
 fun good_max (xs : int list) =
     if null xs
