@@ -141,6 +141,12 @@ case表达式一般形式
 >
 > 上述在编译时发生
 
+# Clear up
+
+- constructor: 函数名或值
+- pattern = constructor + right num of params
+- Pattern matching: 当constructor一样时匹配成功，并将值binding
+
 # 常用数据类型
 
 one-of
@@ -187,6 +193,98 @@ fun eval(e: exp) =
 
 给类型起别名
 
-- syntax: `type` typename = t
+- syntax: `type` typename = `t`
+
+  - `t`是一个类型而不是变量
+
+  - 可用于自定义组合类型`type card = suit * rank`
+
+    或者自定义的长record类型，比如
+
+  ```
+  type name_record = {
+  	student_num: int option,
+  	first: string,
+  	middle: string option,
+  	last: string
+  }
+  ```
 
 - eval: typename和t完全等价
+
+> 存在目的就是方便使用
+
+> `type`只能用于给类型其别名，给变量(或函数，函数也是变量)起别名使用`val`
+
+# 递归数据结构
+
+ml中的list和option本质上也是datatype定义（list中加入了运算符重载？）
+
+比如我们可以自定义列表
+
+```
+datatype my_int_list = Empty | Cons of int * my_int_list
+
+val my_int_list_demo = Cons(1, Cons(2, Cons(3, Empty)))
+```
+
+之后通过case来访问
+
+```
+fun append_my_list(xs, ys) = 
+	case xs of
+		Empty => ys |
+		Cons(x, xs') => Cons(x, append_my_list(xs', ys))
+```
+
+> xs' 读作 xs prime
+
+## 使用case来访问option
+
+```
+fun inc_or_zero(intoption) = 
+	case intoption of
+		NONE => 0 |
+		SOME i => i+1
+```
+
+ML会自动识别intoption的类型（为`int option`）
+
+- `NONE`/ `SOME`本质上就是constructor
+
+## 使用case来访问list
+
+```
+fun append(xs, ys) = 
+	case xs of
+		[] => ys |
+		x :: xs' => x :: append(xs', ys)
+```
+
+这里`[]`和`::`只是长相奇怪的constructor
+
+# 多态数据类型
+
+接受数据类型作为参数
+
+> 范型？
+
+ML中`list`/`option`是多态**类型构造器**
+
+- ML中list和option可以是`int list/string list`等等
+
+- 函数可以接受多种类型输入`val append : 'a list * 'a list -> 'a list'`
+
+**自定义多态数据类型**
+
+```
+datatype 'a option = NONE | SOME of 'a
+datatype ('a, 'b) tree = 
+	Node of 'a * ('a, 'b) tree * ('a, 'b) tree |
+	Leaf of 'b
+```
+
+- Syntax: 使用`'`符号修饰类型参数
+
+- eval: 使用多态数据类型在运行行为上无影响
+- Type-check: 需要保证类型一致

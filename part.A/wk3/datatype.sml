@@ -52,4 +52,4 @@ fun eval(e: exp) =
         Add(e3, e4) => eval(e3) + eval(e4)|
         Multiply(e5, e6) => eval(e5) * eval(e6)
 
-eval(expression)
+type alias = mytype

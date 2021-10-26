@@ -34,3 +34,14 @@ fun is_Queen_of_Spades2 c =
 but that is also
   val is_Queen_of_Spades2 = fn : card -> bool
 *)
+
+val test_record = {
+  student_num= SOME 123,
+  first= "Paul",
+  middle=NONE,
+  last="Lin"
+}
+
+fun fun_record(record: name_record) = record;
+
+fun_record(test_record)

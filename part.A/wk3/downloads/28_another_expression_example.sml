@@ -9,6 +9,17 @@ datatype exp = Constant of int
 (* Note: example as explained in video assumes there is no library function
    for max of two ints.  There is: Int.max *)
 
+fun max_constant_self exp = 
+    let
+        val findMax = Int.max
+    in
+        case exp of
+            Constant i => i |
+            Negate e => max_constant_self e |
+            Add(e1, e2) =>  findMax(max_constant_self e1, max_constant_self e2) |
+            Multiply(e1, e2) => findMax(max_constant_self e1, max_constant_self e2)
+    end
+
 fun max_constant e =
     let fun max_of_two (e1,e2) =
 	    let val m1 = max_constant e1
@@ -25,7 +36,11 @@ fun max_constant e =
     end
 
 val test_exp = Add (Constant 19, Negate (Constant 4))
-val nineteen = max_constant test_exp
+val nineteen = max_constant_self test_exp
+
+fun test_fun(func: exp -> int) = func(test_exp)
+
+test_fun(max_constant_self)
 
 (* Note: Using Int.max, we don't need a local helper function. 
 This second version is fewer lines, but there is a bit more
