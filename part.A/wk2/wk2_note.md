@@ -325,3 +325,13 @@ fun sort_pair(pr: int * int) =
 
 > 课程主要注重于semantic和idiom，因为其与编程语言特性相关
 
+# addtional
+
+| type            | 相关方法                         |
+| --------------- | -------------------------------- |
+| int             | Int.toString()                   |
+| string          | 拼接 "abc" ^ "def"               |
+| 'a list/ t list | null(L) / hd(L) / tl(L) / e :: L |
+| (t * t * t)     | #1tuple                          |
+| t option        | NONE / SOME e / isSome / valOf   |
+
