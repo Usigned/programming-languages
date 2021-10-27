@@ -14,19 +14,19 @@ fun old_zip3 (l1,l2,l3) =
 (* don't do this *)
 fun shallow_zip3 (l1,l2,l3) =
     case l1 of
-	[] => 
-	(case l2 of 
-	     [] => (case l3 of
-			[] => []
-		      | _ => raise ListLengthMismatch)
-	   | _ => raise ListLengthMismatch)
-      | hd1::tl1 => 
-	(case l2 of
-	     [] => raise ListLengthMismatch
-	   | hd2::tl2 => (case l3 of
-			      [] => raise ListLengthMismatch
-			    | hd3::tl3 => 
-			      (hd1,hd2,hd3)::shallow_zip3(tl1,tl2,tl3)))
+		[] => 
+		(case l2 of 
+			[] => (case l3 of
+				[] => []
+				| _ => raise ListLengthMismatch)
+		| _ => raise ListLengthMismatch)
+		| hd1::tl1 => 
+		(case l2 of
+			[] => raise ListLengthMismatch
+		| hd2::tl2 => (case l3 of
+					[] => raise ListLengthMismatch
+					| hd3::tl3 => 
+					(hd1,hd2,hd3)::shallow_zip3(tl1,tl2,tl3)))
 
 (* do this *)
 fun zip3 list_triple =
@@ -43,3 +43,41 @@ fun unzip3 lst =
 		       in
 			   (a::l1,b::l2,c::l3)
 		       end
+
+fun isEmpty (l1, l2, l3) = 
+	case l1 of
+		[] => (
+			case l2 of
+				[] => (
+					case l3 of 
+						[] => true |
+						_ => false
+				) |
+				_ => false
+		) |
+		_ => false
+
+fun isEmpty_nested_pattern list_triple = 
+	case list_triple of
+		([], [], []) => true |
+		_ => false
+
+
+isEmpty_nested_pattern([], [], [])
+
+
+fun my_zip list_triple = 
+	case list_triple of
+		([], [], []) => [] |
+		(hd1 :: tl1, hd2 :: tl2, hd3 :: tl3) => (hd1, hd2, hd3) :: my_zip(tl1, tl2, tl3) |
+		_ => raise ListLengthMismatch
+
+
+(* 运行时不会出错，因为list只能含有相同类型元素 *)
+fun my_unzip lst = 
+	case lst of 
+		[] => ([], [], []) |
+		(x, y, z): tl => (
+			let xs, ys, zs = my_unzip(tl) in
+			(x :: xs, y :: ys, z :: zs)
+		)

@@ -53,3 +53,33 @@ fun eval(e: exp) =
         Multiply(e5, e6) => eval(e5) * eval(e6)
 
 type alias = mytype
+
+
+datatype ('a, 'b,'c) polymorphic_type =
+    NONE |
+    Tuple of 'a * 'b * 'c 
+
+val x: (int, string, bool) polymorphic_type = Tuple(1, "a", true)
+
+
+fun match_tuple(tuple) = 
+    case tuple of
+        (x, y, z) => x + y + z
+
+(* int list -> bool *)
+fun nondecreasing xs = 
+    case xs of
+        [] => true |
+        _ :: [] => true |
+        x1 :: (x2 :: xs'') => (
+            x1 <= x2 andalso nondecreasing(x2 :: xs'')
+        )
+
+nondecreasing([1,2,2,3,4,3])
+
+datatype sgn = P | N | Z
+
+fun len xs = 
+    case xs of 
+        [] => 0 |
+        _ :: xs' => 1 + len xs'

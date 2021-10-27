@@ -288,3 +288,188 @@ datatype ('a, 'b) tree =
 
 - eval: 使用多态数据类型在运行行为上无影响
 - Type-check: 需要保证类型一致
+
+- 函数中类型会根据数据运算来推断
+
+> 类型参数用逗号分隔，参数用星号分隔
+
+```
+datatype ('a, 'b,'c) polymorphic_type = 
+	NONE |
+	Tuple of 'a * 'b * 'c
+
+val x: (int, string, bool) polymorphic_type = Tuple(1, "a", true)
+```
+
+此时`x`的类型为`(int, string, bool) polymorphic_type`而不是`(int * string * bool) polymorphic_type`
+
+# Val/Fun with pattern matching
+
+ML中所有变量，函数都使用模式匹配（都是语法糖）
+
+>  [previously on one-of type pattern matching](#Pattern matching)
+
+each-of类型模式匹配
+
+- tuple pattern `(x1, ..., xn)`
+
+  匹配值`(v1, v2, ..., vn)`，数量、类型须一致
+
+- record pattern `{f1=x1, ..., fn=xn}`
+
+  匹配每个field的值
+
+```
+fun add_tuple(tuple) = 
+	case tuple of
+		(x, y, z) => x + y +z
+
+fun concate_string(name: {first: string, middle:string, last: string}) =
+	case r of 
+        {first=x,middle=y,last=z} => x ^ " " ^ y ^ " " ^z
+```
+
+## 变量pattern
+
+使用模式匹配进行变量绑定
+
+- 变量只是一种pattern
+  - `val` pattern = e
+  - `val (x, y, z) = (1, "2", true)`
+
+> 有点类似python中tuple unpacking
+
+## 函数pattern
+
+函数的参数是**一个**pattern
+
+`fun` funcName *pattern* = e
+
+- tuple做pattern（之前使用的）
+
+  ```
+  fun sum_tuple (x, y, z) = 
+  	x + y + z
+  ```
+
+- record做pattern
+
+  ```
+  fun full_name ({first=x, middle=y, last=z}) = 
+  	x ^ " " ^ y ^ " " ^z
+  ```
+
+> ML中函数都接受一个tuple类型参数，然后用模式匹配来提取其中的值
+
+# Type Inference
+
+编译器在类型检查时自动识别类型（最general的）
+
+```
+fun sum_triple1 (x,y,z) = x + y + z
+```
+
+此时类型为`int * int * int -> int`
+
+```
+fun sum_triple1 (x,y,z) = x + z
+```
+
+此时类型为`int * 'a * int -> int`
+
+# 多态和等价类型
+
+**more general原则**
+
+如果能将type1中的类型变量统一替换并得到t2，则说明type1比type2更general
+
+**more general原则和等价原则结合**
+
+> 等价原则：record中的顺序无关紧要，有相同字段=》等价
+
+泛化程度排序高=>低
+
+`{quux: 'b, bar: int * 'a, baz: 'b}` >
+
+ `{quux: string, bar: int * int, baz: string}`  = 
+
+`{quux: string, baz: string, bar: int * int}`
+
+## 等价类型equalty type
+
+双引号修饰`''a list * ''a -> bool`
+
+- 受限多态类型：该类型需要能够用`=`运算符
+- 多数类型可以int, string, tuple等
+- 少数不行，如real, 函数
+
+> ML中=比较特殊，故有一个''a类型
+
+# 嵌套pattern
+
+pattern中嵌套pattern（来避免多个case嵌套，提升代码可读性）
+
+比如判断一个含3个list是否全为空，可以使用case中嵌套case
+
+```
+(* bad style*)
+fun isEmpty (l1, l2, l3) = 
+	case l1 of
+		[] => (
+			case l2 of
+				[] => (
+					case l3 of 
+						[] => true |
+						_ => false
+				) |
+				_ => false
+		) |
+		_ => false
+```
+
+该方法可读性较差，使用嵌套pattern
+
+```
+fun isEmpty list_triple = 
+	case list_triple of
+		([], [], []) => true |
+		_ => false
+```
+
+这里`([],[],[])`嵌套pattern即匹配了3元tuple又匹配了每个tuple必须为空列表
+
+同理使用嵌套pattern来实现zip
+
+```
+fun zip list_triple = 
+	case list_triple of
+		([], [], []) => [] |
+		(hd1 :: tl1, hd2 :: tl2, hd3 :: tl3) => (hd1, hd2, hd3) :: zip(tl1,tl2,tl3) |
+		_ => (*raise exception*)
+```
+
+> [使用case来访问list](#使用case来访问list)提到了如何pattern match list
+>
+> `_`可以匹配任何项，写在其他pattern前会报错`Error: match redundant`
+>
+> `_`可以像python里一样做没使用变量的占位符，python中应该也是pattern match?
+
+# Pattern Matching Precisely
+
+semantic: 给定一个pattern和一个value，判断是否match，如果match那么引入那些binding?
+
+rules:
+
+1. pattern是一个变量x，则匹配成功并将x绑定到v
+   - 比如申明变量`val x = v`
+
+2. pattern是一个wildcard(`_`)，则匹配成功并且不引入任何binding
+
+3. pattern是pattern组成的tuple`(p1,...,pn)`，value是值组成的tuple`(v1,...,vn)`，那么当`p1/v1`...`pn/vn`都匹配成功时，该match成功。引入的binding是所有子匹配过程中引入binding的交集
+
+4. pattern是以pattern为参数的构造器`C p1`，那么匹配成功的条件为
+
+   1. value是以`v1`为参数的相同构造器`C v1`且
+   2. `v1/p1`匹配成功
+
+   引入的binding为子匹配过程中引入的binding
