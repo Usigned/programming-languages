@@ -473,3 +473,96 @@ rules:
    2. `v1/p1`匹配成功
 
    引入的binding为子匹配过程中引入的binding
+
+# 函数重载
+
+可以使用case来使同一个函数接收不同pattern的参数
+
+```
+fun f x = 
+	case x of
+		p1 => e1 |
+		p2 => e2
+```
+
+上述可以简写为
+
+```
+fun f p1 = e1 |
+	f p2 = e2 
+```
+
+>  本质上是case表达式的语法糖
+>
+> 类似java函数重载
+
+# 异常
+
+异常binding
+
+> 语法类似datatype binding
+
+- syntax
+  - 不含参数： `exception` ExceptionName
+  - 含参数: `exception` ExceptionName `of` type
+    - `exception MyException of int * int`
+- 类型：异常类型为`exn`
+
+抛出异常
+
+- syntax
+  - `raise` ExceptionName(params)
+
+处理异常
+
+- syntax: `handle` p `=>` e
+  - p为异常pattern，异常名
+- eval：同case中的pattern match
+
+```
+val z = maxlist ([],MyUndesirableCondition)
+		handle MyUndesirableCondition => 42
+```
+
+# Tail Recursion
+
+call-stacks
+
+- stack-frames
+
+非尾部递归，在递归后还有步骤`n*`
+
+![image-20211028112710376](https://raw.githubusercontent.com/Usigned/pic-typora/main/images/image-20211028112710376.png)
+
+尾部递归，递归后直接返回
+
+```
+fun fact n = 
+	let 
+		fun aux(n, acc) = if n=0 then acc else aux(n-1, acc*n)
+    in
+    	aux(n,1)
+    end
+```
+
+![image-20211028113241741](https://raw.githubusercontent.com/Usigned/pic-typora/main/images/image-20211028113241741.png)
+
+ML编译器对尾部递归有优化
+
+- 将调用者空间覆盖，因此没有stack
+
+  ![image-20211028113437946](https://raw.githubusercontent.com/Usigned/pic-typora/main/images/image-20211028113437946.png)
+
+- 效率和循环一样
+
+## 普通递归转tail recursion
+
+方法：加入一个helper函数，如上述转换
+
+>  适用于对顺序无关的递归
+
+> list间append是低效的
+
+## tail-call
+
+函数调用在tail position
