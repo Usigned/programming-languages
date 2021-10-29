@@ -561,8 +561,17 @@ ML编译器对尾部递归有优化
 
 >  适用于对顺序无关的递归
 
-> list间append是低效的
+> list间append是低效的(copy)
 
 ## tail-call
 
 函数调用在tail position
+
+tail position:
+
+1. 如果一个表达式不在尾部，那么其所有子表达式都不在尾部
+2. 在函数`fun f p = e`中，`e`在尾部位置
+3. 若`if e1 then e2 else e3`在尾部位置，那么`e2`和`e3`在尾部。`case`表达式同理。
+4. 如果`let b1... bn in e end`在尾部位置，那么`e`在尾部位置，绑定表达式则都不在
+5. 函数参数中的表达式不在尾部位置
+

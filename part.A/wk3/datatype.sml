@@ -83,3 +83,14 @@ fun len xs =
     case xs of 
         [] => 0 |
         _ :: xs' => 1 + len xs'
+
+
+
+fun doIt q =
+    case q of
+	[] => A
+  | x::xs =>
+        if B
+        then C
+        else let val res = D;
+            in E :: xs end	

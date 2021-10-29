@@ -5,7 +5,7 @@
 
 val test1 = all_except_option ("string", ["string"]) = SOME []
 
-val test2 = get_substitutions1 ([["foo"],["there"]], "foo") = []
+val test2 = get_substitutions1 ([["foo", "bar"],["there", "foo"]], "foo") = ["bar", "there"]
 
 val test3 = get_substitutions2 ([["foo"],["there"]], "foo") = []
 
