@@ -11,3 +11,11 @@ coursera课程[程序设计语言](https://www.coursera.org/learn/programming-la
 
 ## wk3
 
+1. 3种混合类型：one-of，each-of，self-reference
+2. datatype，type
+3. 多态类型
+4. pattern matching：所有变量、函数绑定皆是pattern
+5. 异常
+6. 尾递归
+
+## wk4
