@@ -25,9 +25,9 @@ fun f3 (xs,lo,hi) =
 
 fun f4 (xs,s) =
     let 
-	val i = String.size s
+	    val i = String.size s
     in
-	fold((fn (x,y) => x andalso String.size y < i), true, xs)
+	    fold((fn (x,y) => x andalso String.size y < i), true, xs)
     end
 
 fun f5 (g,xs) = fold((fn(x,y) => x andalso g y), true, xs)
