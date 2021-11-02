@@ -333,7 +333,75 @@ fun backup2(f, g) = fn x => fx handle _ => g x
 
 # Curry（函数柯里化）
 
-> ML中每个函数接收一个参数，多个参数通过元组传递
+> ML中每个函数接收一个参数
+>
+> 想要传多个参数可以
+>
+> 1. 通过元组传递
+> 2. Curry
 
-curry: 一个个传递参数
+Curry：利用闭包一个个传递参数
+
+Example:
+
+1. 通过tuple传递多个参数
+
+   ```SML
+   fun sorted3_tuple (x,y,z) = x >= y andalso y >=z
+   ```
+
+   - `sorted3_tuple`类型为`int * int * int -> bool`
+
+2. curry
+
+   ```SML
+   val sorted3 = fn x => fn y => fn z => x >= y andaslo y >= z
+   (* 调用 *)
+   ((sorted3 7)9)11
+   ```
+
+   - `sorted3`类型为`int -> int -> int -> bool`
+   - 调用的本质为`sorted3(7)(9)(11)`
+     - 除了最后一次，每次调用的返回结果都为一个函数
+     - 而上一次调用的函数参数通过闭包来提供给下一个函数调用使用
+
+> 个人理解：curry化就是将一个多参数函数转变为一系列的单参数函数连续调用
+>
+> ```
+> fun function (p1, p2, p3) = body
+> (* 柯里化 *)
+> fun function p = fn p1 => fn p2 => fn p3 => body
+> ```
+>
+> 柯里化依赖于闭包特性？（否则最后一个函数如何访问先前参数？）
+
+## ML对curry提供的语法糖
+
+1. 调用可省略括号
+
+   ```
+   ((sorted3 7)9)11
+   (* 简化 *)
+   sorted3 7 9 11
+   ```
+
+2. 定义时可以省略匿名韩素
+
+   ```
+   val sorted3 = fn x => fn y => fn z => z >= y andalso y >= x
+   (* 简化 *)
+   fun sorted3_nicer x y z = z >= y andalso y>= x
+   ```
+
+## 使用柯里化函数来使用部分函数
+
+柯里化的函数可以分开调用
+
+> 有点类似wrapper
+
+比如可以把`sorted3`改造为判断正负函数
+
+```
+val is_neg = sorted3 0 0
+```
 
