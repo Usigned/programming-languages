@@ -1,4 +1,4 @@
-(* Programming Languages, Dan Grossman *)
+ (* Programming Languages, Dan Grossman *)
 (* Section 3: Why Lexical Scope *)
 
 (* f1 and f2 are always the same, no matter where the result is used *)
