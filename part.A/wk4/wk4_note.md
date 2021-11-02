@@ -79,7 +79,7 @@ fun triple_n_times(n, x) =
 
 - **匿名函数无法定义递归函数**
 
-  - 否则`fun`就是匿名函数的语法
+  - 否则`fun`就是`val`的语法糖
 
   ```
   fun triple x = 3*x
@@ -110,6 +110,7 @@ fun map (f, xs） =
 		x :: xs' => (f x) :: map(f, xs')
 ```
 
+- `f`是一个映射函数，将元素转换为另一种类型，其类型为`'a ->'b`
 - `map`的类型是: `('a -> 'b) * 'a list -> 'b list`
 - ML内置`List.map`
 
@@ -124,8 +125,8 @@ fun filter(f, xs) =
 		x :: xs' => if f x then x :: (filter(f, xs')) else filter(f, xs')
 ```
 
+- `f`是一个判断函数，判断是否元素是否符合要求，其类型为`'a -> bool`
 - `filter`类型为`('a -> bool) * 'a list -> 'a list`
-
 - ML内置`List.filter`
 
 ## 泛化
@@ -257,3 +258,82 @@ fun fold (f, acc, xs) =
 - 积累的顺序是否有影响取决于`f`（上述是fold left）
 
 - `fold`类型为`('a * 'b -> 'a) * 'b * 'b list -> 'a `
+
+> 通过一个积累函数`f`，将列表中元素通过这个积累函数积累到accumulator中
+>
+> `f`类型：`'a * 'b -> 'a`
+>
+> `fold`
+>
+> *(\* 参数：('a \* 'b -> 'b) \* 'b \* 'a list  \*)*
+>
+> *(\* 返回值：'b \*)*
+
+# 函数组合
+
+```
+fun compose (f, g) = fn x => f (g x)
+```
+
+- 组合`f`和`g`
+
+## ML中内置的函数组合运算符`o`
+
+- syntax: `(f o g) param`
+
+- eval: 等价于`f(g(param))`
+- 例子
+
+```SML
+fun sqrt_of_abs i = Math.sqrt(Real.fromInt(abs i)))
+(*等价于*)
+fun sqrt_of_abs i = (Math.sqrt o Real.fromInt o abs) i
+```
+
+##  自定义运算符
+
+`o`的执行顺序是从右到左，不符合阅读习惯，反直觉。
+
+可以通过ML提供的自定义运算符自定义从左到右的函数结合运算
+
+- syntax: 
+
+  - `infix |>` 
+
+    - 申明一个中缀运算符`|>`
+
+      > infix意为中缀
+
+  - `fun x |> f = f x`
+
+    - 定义这个运算符为调用函数
+
+- example
+
+  - 使用自定义符号来实现函数结合
+
+  ```
+  infix |> (* c#中的定义 *)
+  fun x |> f = f x
+  
+  fun sqrt_of_abs i = i |> abs |> Real.fromInt |> Math.sqrt
+  ```
+
+## 其他组合方式
+
+比如：当第一个函数返回NONE时，则调用第二个函数
+
+```
+fun backup1(f,g) = fn x => case f x of 
+								NONE => g x |
+                                SOME y => y
+
+fun backup2(f, g) = fn x => fx handle _ => g x
+```
+
+# Curry（函数柯里化）
+
+> ML中每个函数接收一个参数，多个参数通过元组传递
+
+curry: 一个个传递参数
+

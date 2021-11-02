@@ -19,7 +19,7 @@ infix !>
 fun x !> f = f x
 
 fun sqrt_of_abs i = i !> abs !> Real.fromInt !> Math.sqrt
-
+(* 若第一个函数返回NONE则调用第二个函数 *)
 fun backup1 (f,g) = fn x => case f x of NONE => g x | SOME y => y
 
 fun backup2 (f,g) = fn x => f x handle _ => g x
