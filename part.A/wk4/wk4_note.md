@@ -393,7 +393,9 @@ Example:
    fun sorted3_nicer x y z = z >= y andalso y>= x
    ```
 
-## 使用柯里化函数来使用部分函数
+## 使用柯里化函数来使用部分应用
+
+> partial application
 
 柯里化的函数可以分开调用
 
@@ -404,4 +406,85 @@ Example:
 ```
 val is_neg = sorted3 0 0
 ```
+
+事实上ML中的库提供的高级函数基本都是curry的，比如`List.map`, `List.filter`
+
+**Value Restriction**
+
+使用partial application来创建多态函数时，可能会出现“值限制”
+
+- 出现警告，且无法调用
+- 如下语句会出现警告
+
+```
+val pairWithOne = List.map (fn x => (x, 1))
+```
+
+## Curry wrap
+
+tuple函数和curry函数转化
+
+```
+fun curry f x y = f (x,y)
+
+fun uncurry f (x,y) = f x y 
+```
+
+- `curry`函数的类型为`('a *'b -> 'c) -> 'a -> 'b -> 'c`
+- `uncurry`的类型为`('a->'b->'c) -> 'a * 'b -> 'c`
+
+交换curry顺序
+
+```
+fun other_curry f x y = f y x
+```
+
+- 类型为`('a -> 'b ->'c)-> 'b -> 'a -> 'c`
+
+## Curry效率
+
+curry函数效率取决于语言的实现
+
+- SML中tuple函数比curry快
+- 一些编程语言中curry更高效(Haskell, F#?)
+
+# ML中的可变类型
+
+引用（Reference）
+
+> c中的指针
+
+- 类型: `t ref`
+
+- syntax
+  - 初始化`ref e`
+  - 赋值`e1 := e2`
+  - 获取值`!e`
+
+```
+val x = ref 42
+val y = ref 42
+val z = x
+val - = x := 43
+val w = (!y) + (!z)
+```
+
+- 注意`x,y,z`在binding后是不可变的，实践变的是其指向的区域中的值
+
+- 比如在绑定后想把`x`指向元组则类型检查无法通
+
+  ```
+  val x = ref 42
+  (* x 类型为 int ref *)
+  x := 123
+  (* x指向的区域的值更新为42 *)
+  x := (1,2,3,4)
+  (* 无法通过类型检查 *)
+  ```
+
+> 个人理解：x和一个`int`类型的区域绑定了
+
+# 回调函数(callbacks)
+
+一个典型的闭包使用案例
 
