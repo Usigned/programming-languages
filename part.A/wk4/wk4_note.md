@@ -113,6 +113,7 @@ fun map (f, xs） =
 - `f`是一个映射函数，将元素转换为另一种类型，其类型为`'a ->'b`
 - `map`的类型是: `('a -> 'b) * 'a list -> 'b list`
 - ML内置`List.map`
+  - 库函数是[柯里化的函数](#Curry（函数柯里化）)
 
 ## Filter
 
