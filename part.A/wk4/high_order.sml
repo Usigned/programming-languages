@@ -59,3 +59,26 @@ fun is_all_longer_than2 (xs, s) =
     in
         if_all_good(fn x => String.size x > min_len, xs)
     end
+
+fun range i j = if i > j then [] else i :: range (i+1) j
+
+fun exists predicate xs =
+    case xs of
+        [] => false |
+        x :: xs' => predicate x orelse exists predicate xs'
+
+exists (fn x => x=7) [1,2,3,4]
+
+val hasZero = exists (fn x => x=0)
+
+val incrementAll = List.map (fn x => x+1)
+
+val removeZeros = List.filter (fn x => x <> 0)
+
+val pairWithOne = List.map (fn x => (x, 1))
+
+fun curry f x y = f(x,y)
+
+fun uncurry f (x,y) = f x y
+
+fun other_curry f x y = f y x

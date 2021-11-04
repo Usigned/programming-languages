@@ -29,3 +29,8 @@ val _ = printIfPressed 11
 val _ = printIfPressed 23
 val _ = printIfPressed 4
 
+
+onEvent 11
+
+!timesPressed
+
