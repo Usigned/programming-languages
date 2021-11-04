@@ -487,5 +487,5 @@ val w = (!y) + (!z)
 
 # 回调函数(callbacks)
 
-一个典型的闭包使用案例
+[what the fuck is callback?]()
 
