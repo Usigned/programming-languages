@@ -487,5 +487,8 @@ val w = (!y) + (!z)
 
 # 回调函数(callbacks)
 
-[what the fuck is callback?]()
+[What the fuck is Callbacks? | Archive (usigned.github.io)](https://usigned.github.io/2021/11/04/What-the-fuck-is-Callbacks/)
 
+# Abstract Data Type
+
+将函数装入record中
