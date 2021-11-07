@@ -386,7 +386,7 @@ Example:
    sorted3 7 9 11
    ```
 
-2. 定义时可以省略匿名韩素
+2. 定义时可以省略匿名函数
 
    ```
    val sorted3 = fn x => fn y => fn z => z >= y andalso y >= x
