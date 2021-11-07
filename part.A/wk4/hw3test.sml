@@ -23,12 +23,12 @@ val test8 = all_answers (fn x => if x = 1 then SOME [x] else NONE) [2,3,4,5,6,7]
 
 val test9a = count_wildcards (TupleP([Wildcard, TupleP([Wildcard, Wildcard, ConstructorP("aada", Wildcard)])])) = 4
 
-val test9b = count_wild_and_variable_lengths (Variable("a")) = 1
+val test9b = count_wild_and_variable_lengths (TupleP([Wildcard, TupleP([Wildcard, Variable("abcd"), ConstructorP("aada", Wildcard), Variable("abcd")])])) = 11
 
-val test9c = count_some_var ("x", Variable("x")) = 1
+val test9c = count_some_var ("x", TupleP([Wildcard, TupleP([Wildcard, Variable("x"), ConstructorP("x", Wildcard), Variable("x")])])) = 2
 
-val test10 = check_pat (Variable("x")) = true
+val test10 = check_pat (TupleP([Wildcard, TupleP([Wildcard, Variable("x"), ConstructorP("x", Wildcard), Variable("y")])])) = true
 
-val test11 = match (Const(1), UnitP) = NONE
+val test11 = match (Tuple([Const(1), Unit, Constructor("x", Unit)]),TupleP([Variable("y"), Variable("x"), ConstructorP("x", Wildcard)])) = SOME [("x", Unit), ("y", Const(1))]
 
-val test12 = first_match Unit [UnitP] = SOME []
+val test12 = first_match Unit [ConstP(12), UnitP] = SOME []

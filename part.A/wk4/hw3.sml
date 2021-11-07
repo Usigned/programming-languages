@@ -68,16 +68,39 @@ fun g f1 f2 p =
 
 val count_wildcards = g (fn () => 1) (fn _ => 0)
 
+val count_wild_and_variable_lengths = g (fn () => 1) String.size
+
+fun count_some_var (str, p) = g (fn () => 0) (fn x => if x = str then 1 else 0) p
+
+val check_pat =
+	let
+		fun get_val_names p = 
+			case p of
+				Variable str => [str] |
+				TupleP ps => List.foldl (fn (x, sum) => get_val_names(x) @ sum) [] ps |
+				ConstructorP(_, p) => get_val_names(p) |
+				_ => []
+
+		fun has_repeats xs = 
+			case xs of
+				[] => false |
+				x :: xs' => (List.exists (fn str=> str=x) xs') orelse (has_repeats xs')
+	in
+		not o has_repeats o get_val_names
+	end
+
+fun match (v, p) = 
+	case (v, p) of 
+		(_, Wildcard) => SOME [] |
+		(valu, Variable name) => SOME [(name, valu)] |
+		(Unit, UnitP) => SOME [] |
+		(Const v1, ConstP v2) => if v1=v2 then SOME [] else NONE |
+		(Tuple vs, TupleP ps) =>  if length vs = length ps then all_answers match (ListPair.zip(vs, ps)) else NONE |
+		(Constructor(s1, v), ConstructorP(s2, p)) => if s1=s2 then match (v, p) else NONE |
+		_ => NONE
 
 
+fun first_match v ps =
+	SOME (first_answer (fn p => match (v, p)) ps) 
+	handle NoAnswer => NONE
 
-
-(**** for the challenge problem only ****)
-
-datatype typ = Anything
-	     | UnitT
-	     | IntT
-	     | TupleT of typ list
-	     | Datatype of string
-
-(**** you can put all your code here ****)
