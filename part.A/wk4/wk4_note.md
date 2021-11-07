@@ -492,3 +492,14 @@ val w = (!y) + (!z)
 # Abstract Data Type
 
 将函数装入record中
+
+# Addition
+
+| type            | dynamic type | static type   |
+| --------------- | ------------ | ------------- |
+| functional      | Racket       | SML           |
+| object-oriented | Ruby         | Java/C#/Scala |
+
+- SML: 多态类型， pattern-matching, 抽象类型&模块
+- Racket: 动态类型，宏，最小化语法，eval
+- Ruby: 面向对象
