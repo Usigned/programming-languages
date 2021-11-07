@@ -7,7 +7,7 @@ val test1 = only_capitals ["A","B","C"] = ["A","B","C"]
 
 val test2 = longest_string1 ["A","bc","C"] = "bc"
 
-val test3 = longest_string2 ["A","bc","C"] = "bc"
+val test3 = longest_string2 ["A","bc","ab", "C"] = "ab"
 
 val test4a = longest_string3 ["A","bc","C"] = "bc"
 
@@ -21,7 +21,7 @@ val test7 = first_answer (fn x => if x > 3 then SOME x else NONE) [1,2,3,4,5] = 
 
 val test8 = all_answers (fn x => if x = 1 then SOME [x] else NONE) [2,3,4,5,6,7] = NONE
 
-val test9a = count_wildcards Wildcard = 1
+val test9a = count_wildcards (TupleP([Wildcard, TupleP([Wildcard, Wildcard, ConstructorP("aada", Wildcard)])])) = 4
 
 val test9b = count_wild_and_variable_lengths (Variable("a")) = 1
 
