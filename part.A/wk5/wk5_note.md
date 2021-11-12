@@ -235,7 +235,6 @@ end
 
 这样实现该签名的structure只能通过`createHiddenType`来创建`hiddenType`类型数据，而无法自己使用构造器创建
 
-- 此时`hiddenType`为一个抽象数据类型(ADT)
 - 若签名中不提供创建该类型的方法，则该签名无法为外界有效使用
 
 > 类似于工厂方法+对象构造器私有化
@@ -244,9 +243,33 @@ end
 
 `structure`应该提供`signature`中定义的所有方法（相同的名称/类型）
 
+> `val`或是`fun`关键字都可以，只要类型相同
+
 > 注意：structure中的类型可以比signature中的更抽象，如signature中有`val func : int * bool -> int`，structure中实现类型为`val func : 'a * 'b -> 'a`此时二者能通过类型检查
 
+### 每个module有独立的类型
+
+> 这点和接口**完全不一样**
+
+假设两个模块`STRUCT1/STRUCT2`都实现相同的签名`SIGDEMO`
+
+```SML
+signature SIGDEMO = 
+sig
+type testType = int * int
+val testFunc : testType -> int 
+end
+```
+
+外界无法用`struct1`的`testType`作为参数来调用`struct2`的`testFunc`方法
+
+> STRUCT1/2的`testType`的类型其实为`STRUCT1.testType`和`STRUCT2.testType`
+>
+> 尽管其模块实现的签名相同，二者实际上是不同的类型
+
 # Equivalence
+
+从使用者角度看，表现相同
 
 > 不同的签名下，模块的等价性不同。
 >
@@ -254,10 +277,89 @@ end
 
 ## 等价条件
 
-在相同的输入下，两个程序
+在相同的输入下，两个函数等价须具有以下条件
 
 1. 有相同的输出
 2. 有相同的终止条件
 3. 对内存的操作相同
 4. IO操作相同
 5. 抛出的异常相同
+
+> 以下条件让函数更容易等价
+>
+> - 减少函数参数
+> - 减少函数side-effects:mutation,IO,异常等
+
+例子
+
+```SML
+fun g (f, x) = (f x) + (f x)
+
+val y = 2
+fun g (f,x) =
+	y * (f x)
+```
+
+上下两个函数**不等价**，因为`f`函数在调用次数不同，而其可能有side-effects
+
+- 如`g (fn i => (print "hi";i), 7)`，第一种实现会打印两次，第二种仅一次
+
+- 需要**纯**函数编程
+
+## 典型的等价事例
+
+语法糖：恒等价
+
+**Standard equivalences**
+
+三种恒等价的场景
+
+1. 重命名变量
+
+   - 不能和原来变量重名，可能会导致shadow等其他问题
+
+2. 使用helper函数
+
+   - helper函数中变量不能和原环境中冲突
+
+3. 不必要的函数封装
+
+   ```
+   fun f x = x +x
+   
+   fun g y = f y
+   val g = f
+   ```
+
+   - 有些情况下（如果`f`有特殊的副作用）不适用
+
+4. 如果忽略类型的影响，ML中`let`表达式可以视作匿名函数的语法糖
+
+   ```SML
+   let val x = e1 in e2 end
+   
+   (fn x => e2) e1
+   ```
+
+   - 二者等价：都创建一个新环境并把`x`赋值给`e1`
+   - 但`ML`中 不允许非变量的多态，故第二种无法通过类型检查
+
+## 等价与性能
+
+两个函数等价时，其性能可能会有很大的差异
+
+### 多种等价定义
+
+1. PL等价：给定相同输入，输出相同，副作用相同
+
+   - 忽略性能
+
+2. asymptotic等价：算法层面的等价
+
+   > O(n)表达式等
+
+   - 只注重数量级，忽略常数，如9n和2n都是O(n)
+
+3. 系统级等价
+
+   - 注重常数级性能

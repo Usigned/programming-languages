@@ -493,6 +493,10 @@ val w = (!y) + (!z)
 
 将函数装入record中
 
+- a type of data and operations on it
+
+> 含操作的数据类型
+
 # Addition
 
 | type            | dynamic type | static type   |
