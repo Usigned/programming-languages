@@ -82,3 +82,182 @@ ML无法对`ref`类型做特殊处理（由于模块系统），因为类型检�
 > 1. 若没有多态（更严格），则制约了程序的可复用性（比如读取List长度的函数应该是什么类型？）
 > 2. 若加入了subtyping（更宽松），则十分难实现与管理
 
+# 互递归Mutual Recursion
+
+两个或多个函数相互调用：`f`调用`g`且`g`调用`f`
+
+典型用例：状态机
+
+问题：ML只能使用已有的binding
+
+- ML语言提供支持`and`
+- 高级函数
+
+## and关键字
+
+- 函数binding
+
+  ```SML
+  fun f1 p1 = e1
+  and f2 p2 = e2
+  and f3 p3 = e3
+  ```
+
+- 数据类型binding
+
+  ```SML
+  datatype t1 = ...
+  and t2 = ...
+  and t3 = ...
+  ```
+
+- 用`and`连接的部分会一起类型检查，并且可以相互引用
+
+**有限状态机use case**
+
+每个状态对应一个函数，调用后转到另一个状态
+
+以下展示一个判断List中是否符合规律[1,2] * n
+
+```
+fun match xs = 
+	let
+		fun need_one xs =
+			case xs of
+				[] => true |
+				1 :: xs' => need_two xs' |
+				_ => false
+  	and need_two xs =
+  		case xs of
+  			[] => true |
+  			2 :: xs' => need_one xs' |
+  			_ => false
+	in
+		need_one xs
+	end
+```
+
+> 任何有限状态机都可以用上述方法实现
+
+## 不使用关键字
+
+不使用特性来实现前函数调用后函数
+
+> 会比使用关键字慢一些
+
+```SML
+fun earlier (f, x) = ... f y ...
+(*... *)
+fun later x == ... earlier (later, y) ...
+```
+
+> 有点类似callback 
+
+# Module Sys
+
+对于大型程序来说只有一层binding是不够的
+
+- 同时也因为binding可以使用所有之前的binding
+
+## Structure
+
+Module中的一种
+
+Syntax:
+
+- 定义
+
+  ```SML
+  structure MyModule = struct bindings end
+  ```
+
+  - 模块中能使用先前的binding
+
+- 模块外调用模块内binding
+
+  ```SML
+  ModuleName.bindingName
+  ```
+
+> ModuleName本身不会被引入环境中
+>
+> Namespace: 基本思想就是binding分层
+
+### Open方法
+
+```SML
+open MyModule
+```
+
+- 将`MyModule`中所有的`binding`放入顶层binding中
+
+  
+
+## Signatures
+
+Module中的一种定义binding的**名字**和**类型**
+
+> 有点类似接口类
+
+```
+signature MATHLIB = 
+sig
+val fact : int -> int
+val half_pi : int
+val doubler : int -> int
+end
+
+structure MyMathLib :> MATHLIB = 
+struct
+fun fact x = ...
+val half_pi = Math.pi / 2
+fun doubler x = x *2
+```
+
+- syntax
+  - 定义: `signature SigName = sig types-for-bindings end`
+  - 实现:`structure MyModule :> SigName = struct ... end`
+
+- 作为module对外界的接口
+  - 若module定义时有一签名，那么外界只能访问签名中的方法
+
+### 使用signature隐藏type
+
+在signature使用`type`声明但不指明其类型
+
+```
+signature EXAMPLE = 
+sig
+	type hiddenType
+	val createHiddenType : int -> hiddenType
+end
+```
+
+这样实现该签名的structure只能通过`createHiddenType`来创建`hiddenType`类型数据，而无法自己使用构造器创建
+
+- 此时`hiddenType`为一个抽象数据类型(ADT)
+- 若签名中不提供创建该类型的方法，则该签名无法为外界有效使用
+
+> 类似于工厂方法+对象构造器私有化
+
+### signature matching
+
+`structure`应该提供`signature`中定义的所有方法（相同的名称/类型）
+
+> 注意：structure中的类型可以比signature中的更抽象，如signature中有`val func : int * bool -> int`，structure中实现类型为`val func : 'a * 'b -> 'a`此时二者能通过类型检查
+
+# Equivalence
+
+> 不同的签名下，模块的等价性不同。
+>
+> 原则上暴露在外界(public)的接口越少，两个模块约容易等价。
+
+## 等价条件
+
+在相同的输入下，两个程序
+
+1. 有相同的输出
+2. 有相同的终止条件
+3. 对内存的操作相同
+4. IO操作相同
+5. 抛出的异常相同
