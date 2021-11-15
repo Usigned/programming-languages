@@ -1,0 +1,5 @@
+#lang racket
+
+; this is a commmet
+
+(define s "hello")
