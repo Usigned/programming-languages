@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "D:\\miniconda\\python.exe"
+    "python.pythonPath": "D:\\miniconda\\python.exe",
+    "magic-racket.lsp.enabled": false
 }
