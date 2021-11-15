@@ -16,7 +16,7 @@
 
 (define cube2
   (lambda (x)
-    * x x x))
+    (* x x x)))
 
 (define (cube3 x) (* x x x))
 
@@ -30,3 +30,8 @@
   (if (null? xs)
       ys
       (cons (car xs) (my-append (cdr xs) ys))))
+
+(define (pow x y)
+	(if (= y 0)
+		1
+		(* x (pow x (- y 1)))))
