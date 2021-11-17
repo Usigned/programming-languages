@@ -35,3 +35,31 @@
 	(if (= y 0)
 		1
 		(* x (pow x (- y 1)))))
+
+
+(define (sum xs)
+  (if (null? xs)
+      0
+      (+ (car xs) (sum (cdr xs)))))
+
+;append
+(define (append xs ys)
+  (if (null? xs)
+      ys
+      (cons (car xs) (append (cdr xs) ys))))
+
+;map
+(define (map f xs)
+  (if (null? xs)
+      null
+      (cons (f (car xs)) 
+        (map f (cdr xs)))
+  ))
+
+
+(define (sum_nums xs)
+  (if (null? xs)
+      0
+      (if (number? (car xs))
+          (+ (car xs) (sum_nums (cdr xs)))
+          (+ (sum_nums (car xs)) (sum_nums (cdr xs))))))
