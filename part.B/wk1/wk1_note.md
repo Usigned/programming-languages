@@ -95,9 +95,11 @@ curry版本：（racket中curry不常用）
 - 添加元素: `cons element list`
   - element将添加到List前
   - `(cons 1 (list 2 3 4))`=>`(1 2 3 4)`
-- head: `car`
+- **head**: `car`
+  
   - 同sml中的`hd`
-- tail: `cdr`
+- **tail**: `cdr`
+  
   - 同sml中的`tl`
 - 是否为空: `null?`
 - list构造器: `list`
@@ -134,4 +136,146 @@ racket中的term都可以归属于以下几种
 >
 > - `string? "afafaf"` => `#t`
 > - `number? val`
+
+# Cond
+
+> 用于代替嵌套的if-else
+
+syntax
+
+```
+(cond 	[e1a e1b]
+		[e2 e2b]
+		...
+		[eNa eNb])
+```
+
+1. `[e1a e1b]`前者是条件，后者是值
+2. 当第一个`exa`返回`#t`时，进入
+3. 一般情况下，最后一个`eNa`应该时`#t`(做为default)
+
+> 基本上就是switch
+
+在`if/cond`的条件中，条件不是`#f`就会被判断为`#t`（空list等都相当于`#t`）
+
+# 局部binding
+
+## let
+
+```
+let (
+	[e1 v1]
+	...
+	[eN vN])
+	(body)
+```
+
+- `[e1 v1] ... [eN vN]`局部binding
+  - 局部变量**无法使用**先前的局部变量（ML中可以）
+  - body中可以使用所有先前变量
+  - 典型用例是当局部变量和外部重名时`let ([x y] [y x])`，可以保证统一使用外部变量
+
+exp
+
+```
+(define (silly-double x)
+	(let ([x (+ x 3)] [y (+ x 2)])
+		(+ x y -5)))
+```
+
+- 此时binding中赋值时的`x`都是参数中的`x`
+
+## let*
+
+```
+let* (
+	[e1 v1]
+	...
+	[eN vN])
+	(body)
+```
+
+- 局部binding**可以使用**先前的局部binding
+  - 相当于ML中的let
+
+## letrec
+
+> let for recursion
+
+```
+letrec (
+	[e1 v1]
+	...
+	[eN vN])
+	(body)
+```
+
+- 局部binding可以使用所有局部binding
+
+  - **无论是前面的还是后面的**
+
+  - 类似ML中的`and`
+
+- 典型用例为 **mutual recursion**
+
+- 表达式执行时仍按顺序执行，若尝试运行时仍未定义值，会报错
+
+> 建议只用于Mutual recursion
+
+## local define
+
+> define嵌套
+
+语义上和**letrec**相同，可以使用所有bindings
+
+```
+(define (mod2_b x)
+  (define even? (lambda(x)(if (zero? x) #t (odd? (- x 1)))))
+  (define odd?  (lambda(x)(if (zero? x) #f (even? (- x 1)))))
+  (if (even? x) 0 1))
+
+```
+
+# toplevel bindings
+
+toplevel bindings和`letrec`语义相同：可以使用全部binding
+
+- 无法shadowing，定义两个同名变量会报错
+
+> repl中表现和`let/letrec`都不一致，建议不要在repl中定义递归
+
+> 模块内相当于`letrec`，模块间可以shadow
+
+# set! 赋值
+
+```
+(set! x e) 
+```
+
+- 将`x`的值变成`e`
+
+- 相当于python/java等中的`x = e`
+
+## begin
+
+```
+(begin e1 e2 ... en)
+```
+
+- 按顺序执行`e1 e2 ... en`
+- 表达式的值为最后一个`en`的值
+- 常用于获取`e1 e2 ...`等的副作用
+
+## set!会改变lexical scope中的值
+
+```
+(define b 3) 
+(define f (lambda (x) (* 1 (+ x b)))) 
+(define c (+ b 4)) ;7
+(set! b 5)
+(define z (f 4))   ;9
+(define w c)    ;7
+```
+
+- 第5行中由于`b`被重新赋值，`f`的作用改变了
 

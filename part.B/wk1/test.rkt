@@ -63,3 +63,10 @@
       (if (number? (car xs))
           (+ (car xs) (sum_nums (cdr xs)))
           (+ (sum_nums (car xs)) (sum_nums (cdr xs))))))
+
+
+(define (count_false xs)
+	(cond 
+		[(null? xs) 0]
+		[(car xs) (count_false (cdr xs))]
+		[#t (+ 1 (count_false (cdr xs)))]))
