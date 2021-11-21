@@ -4,6 +4,8 @@
 
 > 语法简单，其实语义挺不优雅的，有各种不统一的现象
 
+[Racket官方文档](http://docs.racket-lang.org/)
+
 # 注释
 
 ```Racket
@@ -395,7 +397,7 @@ lambda () e ; thunk expression
 >
 >  解决方法：在需要时才eval，eval后保留结果 -- lazy eval
 
-## lazy evaluation
+## lazy evaluation(promise)
 
 - 需要时才计算
 - 计算完之后保留结果
@@ -488,3 +490,177 @@ stream定义为`'(next-anwser . next-thunk)`的thunk
 > 感觉stream本质上相当于一个generator，根据上一个元素得到下一个元素（stream-maker的功能）。
 >
 > stream类似一个特殊的链表，不过链表的连接指针是lazy eval的
+
+# Memoization
+
+> 一种避免重复计算的方法
+
+如果一个函数没有副作用，那么以相同参数调用这个函数，其结果会完全一样
+
+- 可以用一个cache来存储计算过的结果
+
+# assoc
+
+```
+(assoc key map)
+```
+
+查询key是否在map中，若存在返回第一次查询到的该(k v)二元组，否则返回#f
+
+- map是一个二元组组成的list
+
+  ```
+  >(define xs (list (cons 1 2) (cons 3 4) (cons 5 6)))
+  '((1 . 2) (3 . 4) (5 . 6))
+  >(assoc 3 xs)
+  '(3 . 4)
+  >(assoc 6 xs)
+  #f
+  ```
+
+# 宏
+
+宏定义指将源码中的一种语法转变为另一种语法
+
+- 宏是一种实现语法糖的方式
+
+宏系统：定义宏的语言
+
+宏扩展：指在程序运行前，将所有宏定义的语法替换为原语法的过程
+
+> rakcet中定义一个宏`m`，使用`(m ...)`会根据定义扩展
+>
+> e.g 扩展`(my-delay e)`为promise `(mcons #f (lambda () e))`
+>
+> Note: 不正确使用宏会导致混乱，在必要时再使用宏，否则使用函数
+
+## Tokenization 
+
+通常宏系统在token层面工作，而不是字符序列层面
+
+> 举个例子
+>
+> 将`head`扩展为`car`，这个宏不会将`(+ headt foo)`扩展为`(+ cart foo)`
+>
+> 也不会把`head_door`扩展为`car_door`
+
+宏系统需要知道哪些是token
+
+## Parenthsization
+
+在c/c++的宏系统中定义如下宏
+
+```c++
+#define ADD(x,y) x+y
+```
+
+在实际使用时会有优先级问题比如：
+
+`ADD(1,2/3)*4`会被扩展为`1+2/3*4`而不是`(1+2/3)*4`
+
+所有在c/c++中定义宏需要加多余的括号比如
+
+```c++
+#define ADD(x,y) ((x)+(y))
+```
+
+在racket中由于所有表达式都有括号，所以不会存在优先级问题
+
+## 局部变量
+
+局部变量和宏重名时，可能会shadow宏定义
+
+```
+(let ([head 0] [car 1]) head) ;0
+(let* ([head 0] [car 1]) head) ;0
+```
+
+此时如果定义宏`head`to`car`且宏定义对变量绑定有效，则上述代码会变成下面
+
+```
+; head to car宏扩展后
+(let ([car 0] [car 1]) car) ;报错，let中无法定义相同的变量
+(let* ([car 0] [car 1]) car) ;1和原结果不同
+```
+
+可以看出宏和局部变量冲突时带来的影响
+
+> 因此c/c++中传统是将宏定义为全大写，而其余代码则是非全大写的
+
+racket中宏不是简单的替换，会考虑scope问题
+
+# Define-syntax(Racket宏系统)
+
+```
+; (my-if foo then bar else baz) -> (if foo bar baz)
+(define-syntax my-if
+	(syntax-rules (then else)
+		[(my-if e1 then e2 else e3) (if e1 e2 e3)]))
+```
+
+Syntax:
+
+```
+(define-sytanx 宏名称
+	(syntax-rules (宏中使用的除了宏名称之外的关键词)
+		[(含参数的pattern) (扩展后的pattern)]))
+```
+
+**Delay macro**
+
+宏可以用于实现某些函数不能实现的功能，比如delay（接收一个e将其变成一个promise(#f thunk二元组)，同时不调用这个e）。函数无法实现，因为racket中函数的参数是eager eval的
+
+```
+(define-syntax my-delay
+	(syntax-rules ()
+		[(my-delay e) (cons (#f lambda () e))]))
+```
+
+## Hygienic Marco
+
+> "卫生"的宏？
+
+```
+(define (db1 x) (+ x x))
+(define (db1 x) (* 2 x))
+```
+
+上述两个函数是等价的，但是下列两个宏是不等价的
+
+```
+(define-syntax db1 (syntax-rules () [(db1 x) (+ x x)]))
+(define-syntax db1 (syntax-rules () [(db1 x) (* 2 x)]))
+```
+
+比如`(db1 (begin (print "hi") 42))`，第一个版本print两个"hi"，第二个版本print一次
+
+> 由于函数的参数是eager eval的，故x都只eval一次
+>
+> 但是宏扩展后每个x都会单独eval，此时若x有副作用，则会有影响
+
+解决方法：把变量保存到局部变量
+
+例子
+
+```
+(define-syntax db1
+	(syntax-rules ()
+		[(db1 x) (let ([y x] (+ y y)))]))
+```
+
+> 同时还可以解决宏中变量eval顺序与扩展后不一样的问题
+
+> 在c/c++宏系统中，在宏中定义局部变量是不明智的，需要取如`__name`的变量名来避免冲突，类似[局部变量](#局部变量)中描述的冲突
+>
+> Racket中hygiene保证了局部变量不会冲突
+>
+> Racket中的宏有类似lexical scope的机制
+
+Hygienic宏系统定义
+
+1. 会自动重命名宏定义中的局部变量防止冲突
+2. 在宏定义时的环境中查找变量(lexical scope)
+
+> 简单的替换(naive expansion)不具备以上性质
+>
+> 在绝大多数情况下，清洁的宏系统都更好
