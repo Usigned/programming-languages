@@ -485,3 +485,6 @@ stream定义为`'(next-anwser . next-thunk)`的thunk
 (define power-of-twos (stream-maker * 2))
 ```
 
+> 感觉stream本质上相当于一个generator，根据上一个元素得到下一个元素（stream-maker的功能）。
+>
+> stream类似一个特殊的链表，不过链表的连接指针是lazy eval的
