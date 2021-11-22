@@ -40,4 +40,41 @@
     (lambda () f-dan)))
 
 
-(define (stream-add-zero s) (lambda () (let ([p (s)]) (cons (cons 0 (car p)) (stream-add-zero (cdr p))))))
+(define (stream-add-zero s) 
+    (lambda () 
+        (let ([p (s)]) 
+            (cons 
+                (cons 0 (car p)) 
+                (stream-add-zero (cdr p))))))
+
+
+(define (cycle-lists xs ys)
+    (letrec ([f (lambda (n) 
+                    (cons 
+                        (cons (list-nth-mod xs n) (list-nth-mod ys n)) 
+                        (lambda () (f (+ n 1)))))])
+                        (lambda () (f 0))))
+
+
+(define (vector-assoc v vec)
+    (letrec (
+        [len (vector-length vec)]
+        [f (lambda (idx) 
+            (if (< idx len) 
+                (let ([x (vector-ref vec idx)])
+                    (if (and (pair? x) (equal? (car x) v))
+                        x
+                        (f (+ idx 1))))
+                #f))])
+    (f 0)))
+
+
+(define (cached-assoc xs n)
+    (letrec ([cache (make-vector n #f)] [idx 0])
+        (lambda (v)
+            (let ([res (vector-assoc v cache)])
+                (if res res
+                    (let ([res (assoc v xs)])
+                        (if res 
+                            (begin (vector-set! cache idx res) (set! idx (if (= idx (- n 1)) 0 (+ idx 1))) res)
+                            #f)))))))
