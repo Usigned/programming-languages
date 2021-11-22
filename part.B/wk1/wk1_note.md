@@ -664,3 +664,99 @@ Hygienic宏系统定义
 > 简单的替换(naive expansion)不具备以上性质
 >
 > 在绝大多数情况下，清洁的宏系统都更好
+
+# Addtitions
+
+## map
+
+[4.10 Pairs and Lists (racket-lang.org)](https://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket%2Fprivate%2Fmap..rkt)._map)))
+
+```
+(map proc lst ...+) → list?
+ proc : procedure?
+ lst : list?
+```
+
+Applies *proc* to the elements of the *lst*s from the first elements to the last. The *proc* argument must accept the same number of arguments as the number of supplied *lst*s, and all *lst*s must have the same number of elements. The result is a list containing each result of *proc* in order.
+
+```
+> (map (lambda (number)
+         (+ 1 number))
+       '(1 2 3 4))
+'(2 3 4 5)
+
+> (map (lambda (number1 number2)
+         (+ number1 number2))
+       '(1 2 3 4)
+       '(10 100 1000 10000))
+'(11 102 1003 10004)
+```
+
+## string-append
+
+```
+(string-append str ...) → string?
+str : string?
+```
+
+Returns a new mutable string that is as long as the sum of the given *str*s’ lengths, and that contains the concatenated characters of the given *str*s. If no *str*s are provided, the result is a zero-length string.
+
+```
+> (string-append "Apple" "Banana")
+"AppleBanana"
+```
+
+## remainder
+
+> x % y
+
+```
+(remainder n m) → integer?
+n : integer?
+m : integer?
+```
+
+```
+> (remainder 10 3)
+1
+
+> (remainder -10.0 3)
+-1.0
+
+> (remainder 10.0 -3)
+1.0
+
+> (remainder -10 -3)
+-1
+```
+
+## list-tail
+
+```
+(list-tail lst pos) → any/c
+  lst : any/c
+  pos : exact-nonnegative-integer?
+```
+
+Returns the list after the first *pos* elements of *lst*. If the list has fewer than *pos* elements, then the [exn:fail:contract](https://docs.racket-lang.org/reference/exns.html#(def._((lib._racket%2Fprivate%2Fbase..rkt)._exn~3afail~3acontract))) exception is raised.
+
+The *lst* argument need not actually be a list; *lst* must merely start with a chain of at least *pos* pairs.
+
+This function takes time proportional to *pos*.
+
+```
+> (list-tail (list 1 2 3 4 5) 2)
+'(3 4 5)
+
+> (list-tail (cons 1 2) 1)
+2
+
+> (list-tail (cons 1 2) 2)
+list-tail: index reaches a non-pair
+  index: 2
+  in: '(1 . 2)
+
+> (list-tail 'not-a-pair 0)
+'not-a-pair
+```
+
