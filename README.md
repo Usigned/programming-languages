@@ -12,3 +12,10 @@ lang: SML
 - 函数柯里化(currying)
 - lexical scope
 - static type
+
+Part.B
+lang: Racket
+- Racket语法
+- lazy evaluation
+- thunk
+- stream
