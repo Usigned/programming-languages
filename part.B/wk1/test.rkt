@@ -2,7 +2,7 @@
 
 ; this is a commmet
 
-(provide (all-defined-out))
+; (provide (all-defined-out))
 
 (define s "hello")
 

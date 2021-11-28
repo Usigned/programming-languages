@@ -24,6 +24,19 @@
 
 ;; CHANGE (put your solutions here)
 
+;; Env: Racket list, (racket string, value)
+
+(define (racketlist->mupllist rls)
+    (if (null? rls)
+        (aunit)
+        (apair (car rls) (racketlist->mupllist (cdr rls)))))
+
+
+(define (mupllist->racketlist mls)
+    (if (aunit? mls)
+        null
+        (cons (apair-e1 mls) (mupllist->racketlist (apair-e2 mls)))))
+
 ;; Problem 2
 
 ;; lookup a variable in an environment
@@ -32,6 +45,11 @@
   (cond [(null? env) (error "unbound variable during evaluation" str)]
         [(equal? (car (car env)) str) (cdr (car env))]
         [#t (envlookup (cdr env) str)]))
+
+;; helper func: add bindings to env and return a new env
+;; var = value
+;; var is a racket string, value is a MUPL value, env is a racket list
+(define (add-to-env var value env) (cons (cons var value) env))
 
 ;; Do NOT change the two cases given to you.  
 ;; DO add more cases for other kinds of MUPL expressions.
@@ -48,8 +66,63 @@
                (int (+ (int-num v1) 
                        (int-num v2)))
                (error "MUPL addition applied to non-number")))]
-        ;; CHANGE add more cases here
+        [(aunit? e) e]
+        [(int? e) e]
+        [(closure? e) e]
+        [(ifgreater? e) 
+            (let (
+                [v1 (eval-under-env (ifgreater-e1 e) env)]
+                [v2 (eval-under-env (ifgreater-e2 e) env)]
+            )
+            (cond 
+                [(and (int? v1) (int? v2)) (if (> (int-num v1) (int-num v2)) 
+                                                (eval-under-env (ifgreater-e3 e) env) 
+                                                (eval-under-env (ifgreater-e4 e) env))]
+                [#t (error "MUPL comparasion between non-numbers")]))]
+        [(mlet? e) 
+            (letrec (
+                [v (eval-under-env (mlet-e e) env)]
+                [new-env (add-to-env (mlet-var e) v env)])
+            (eval-under-env (mlet-body e) new-env))]
+        [(fun? e) (closure env e)]
+        [(call? e) 
+            (let (
+                [e1 (eval-under-env (call-funexp e) env)]
+                [e2 (eval-under-env (call-actual e) env)]
+            )
+            (cond
+                [(closure? e1) 
+                    (letrec (
+                        [fun (closure-fun e1)]
+                        [fun-name (fun-nameopt fun)]
+                        [env (closure-env e1)]
+                        [new-env (if fun-name (add-to-env fun-name e1 env) env)]
+                        [extended-env (add-to-env (fun-formal fun) e2 new-env)]
+                    )
+                    (eval-under-env (fun-body fun) extended-env))]
+                [#t (error "not a closure" e1)]))]
+        [(fst? e)
+            (let ([p (eval-under-env (fst-e e) env)])
+                (cond
+                    [(apair? p) (apair-e1 p)]
+                    [#t (error "fst not a pair ~v" p)]))]
+        [(snd? e)
+            (let ([p (eval-under-env (snd-e e) env)])
+                (cond
+                    [(apair? p) (apair-e2 p)]
+                    [#t (error "snd not a pair ~v" p)]))]
+        [(apair? e)
+            (let (
+                [v1 (eval-under-env (apair-e1 e) env)]
+                [v2 (eval-under-env (apair-e2 e) env)]
+            )
+            (apair v1 v2))]
+        [(isaunit? e) 
+            (if (aunit? (isaunit-e e)) 
+                (eval-under-env (int 1) env)   ; can be replaced with (int 1)
+                (eval-under-env (int 0) env))] ; can be replaced with (int 0)
         [#t (error (format "bad MUPL expression: ~v" e))]))
+
 
 ;; Do NOT change
 (define (eval-exp e)
@@ -57,15 +130,42 @@
         
 ;; Problem 3
 
-(define (ifaunit e1 e2 e3) "CHANGE")
+(define (ifaunit e1 e2 e3) (ifgreater (isaunit e1) (int 0) e2 e3))
 
-(define (mlet* lstlst e2) "CHANGE")
+(define (mlet* lstlst e2) 
+    (cond
+        [(null? lstlst) e2]
+        [#t 
+            (let (
+                [var (car (car lstlst))]
+                [ei (cdr (car lstlst))])
+            (mlet var ei (mlet* (cdr lstlst) e2)))]))
 
-(define (ifeq e1 e2 e3 e4) "CHANGE")
+
+;; r1 = if x > y then 0 else 1
+;; r2 = if y > x then 1 else 0
+;; x > y => r1 = 0, r2 = 0
+;; x < y => r1 = 1, r2 = 1
+;; x = y => r1 = 1, r2 = 0
+;; r1 > r2 => x = y
+(define (ifeq e1 e2 e3 e4)
+    (mlet "_x" e1 
+        (mlet "_y" e2 
+            (ifgreater
+                (ifgreater (var "_x") (var "_y") (int 0) (int 1))
+                (ifgreater (var "_y") (var "_x") (int 1) (int 0))
+                e3
+                e4))))
 
 ;; Problem 4
 
-(define mupl-map "CHANGE")
+(define mupl-map
+    (fun #f "f"
+        (fun "rec" "xs"
+            (ifaunit (var "xs") (aunit) 
+                (apair 
+                    (call (var "f") (fst (var "xs"))) 
+                    (call (var "rec") (snd (var "xs"))))))))
 
 (define mupl-mapAddN 
   (mlet "map" mupl-map
