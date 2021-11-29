@@ -92,14 +92,14 @@
             )
             (cond
                 [(closure? e1) 
-                    (letrec (
+                    (let* (
                         [fun (closure-fun e1)]
                         [fun-name (fun-nameopt fun)]
                         [env (closure-env e1)]
                         [new-env (if fun-name (add-to-env fun-name e1 env) env)]
-                        [extended-env (add-to-env (fun-formal fun) e2 new-env)]
+                        [new-env (add-to-env (fun-formal fun) e2 new-env)]
                     )
-                    (eval-under-env (fun-body fun) extended-env))]
+                    (eval-under-env (fun-body fun) new-env))]
                 [#t (error "not a closure" e1)]))]
         [(fst? e)
             (let ([p (eval-under-env (fst-e e) env)])
@@ -118,7 +118,7 @@
             )
             (apair v1 v2))]
         [(isaunit? e) 
-            (if (aunit? (isaunit-e e)) 
+            (if (aunit? (eval-under-env (isaunit-e e) env)) 
                 (eval-under-env (int 1) env)   ; can be replaced with (int 1)
                 (eval-under-env (int 0) env))] ; can be replaced with (int 0)
         [#t (error (format "bad MUPL expression: ~v" e))]))
@@ -162,14 +162,17 @@
 (define mupl-map
     (fun #f "f"
         (fun "rec" "xs"
-            (ifaunit (var "xs") (aunit) 
-                (apair 
-                    (call (var "f") (fst (var "xs"))) 
+            (ifaunit 
+                (var "xs")
+                (aunit)
+                (apair
+                    (call (var "f") (fst (var "xs")))
                     (call (var "rec") (snd (var "xs"))))))))
 
 (define mupl-mapAddN 
   (mlet "map" mupl-map
-        "CHANGE (notice map is now in MUPL scope)"))
+        (fun #f "i"
+            (call (var "map") (fun #f "x" (add (var "x") (var "i")))))))
 
 ;; Challenge Problem
 
