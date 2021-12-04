@@ -78,3 +78,82 @@ ML中的静态检查保证程序永远不会遇到以下问题
 > - Later：返回一个特殊的符号
 >
 > 根据经验，编译时、运行时比较适合检查问题
+
+## 可靠性和完备性
+
+> soundness & completeness
+
+假设一个类型系统的目的是防止引发事件X的程序P执行
+
+- 可靠性：该类型系统会阻止所有可能引发X的P
+  - 没有漏网之鱼，但可能错杀一千
+- 完备性：该类型系统不会阻止任何不会引发X的P
+  - 不会伤及无辜，但可能有漏网之鱼
+
+PL中的类型系统一般被设计为**可靠但不完备的**。
+
+- Fancy features比如泛型，一般用来减少伤及无辜的情况发生(fewer false positives)
+
+- 可靠性，完备性和类型检测能在有限时间内停止是不可兼得的
+  - theorem computation 
+
+## Weak Typing
+
+> 和staic type/dynamic type概念是不相干
+
+弱类型：存在程序，其能通过静态检测，但是在运行时有不可预知的行为。
+
+- 动态类型检查是可选的并且在实际中不存在
+
+> 不检查的原因：
+>
+> - 简化语言实现：检查交由程序员处理
+> - 性能：动态类型检查占用时间
+> - 底层细节
+
+> 最常见的就是数组越界问题，大多数PL会动态检查
+
+# Eval
+
+在运行时将数据(python中是string，Racket中是List)当成程序执行，以下是python中一个例子
+
+```python
+>>> eval("print('eval demo')")
+eval demo
+>>> x = 3
+>>> eval("x+3")
+6
+```
+
+- 由于在运行前不知道数据，我们需要支持运行时eval的语言实现
+  - 可以使用解释器、编译器、结合实现
+  - 但是目标语言需要支持eval，故使用解释器更简单
+    - 因此有些人将支持eval的语言归类位解释型语言（不完全正确）
+
+## eval in Racket
+
+racket中选取的数据结构为list
+
+```
+(define foo
+	(list 'begin
+		(list 'print "hi")
+		(list '+ 4 2)))
+(eval foo)
+```
+
+# Quote
+
+用于组合嵌套list，来简化eval
+
+```
+; foo可以定义为如下
+(quote (begin
+			(print "hi")
+			(+ 4 2)))
+; 返回一个嵌套的list
+```
+
+> quote无法动态创建list
+>
+> 在大多数语言中，eval接受string

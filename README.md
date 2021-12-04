@@ -27,4 +27,5 @@ lang: Racket
 >
 > 没有所谓的编译型语言或解释型语言，只有编译型实现或解释型实现
 
-- 
+- static checking
+- static vs dynamic typing
