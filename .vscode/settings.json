@@ -1,4 +1,5 @@
 {
     "python.pythonPath": "D:\\miniconda\\python.exe",
-    "magic-racket.lsp.enabled": false
+    "magic-racket.lsp.enabled": false,
+    "ruby.useLanguageServer": true, 
 }
