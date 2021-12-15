@@ -152,3 +152,79 @@ class Foo
 end
 ```
 
+> Ruby中代码有严格顺序要求
+>
+> 例子1
+>
+> ```ruby
+> 
+> class Singleton
+>     
+>     def initialize
+>         @args = 123
+>     end
+> 
+>     Instance = Singleton.new #写在intialize后面，否则args=nil
+>     attr_accessor :args
+> 
+>     #注意位置，new设为private从这行开始生效
+>     private_class_method :new
+> 
+> end
+> ```
+>
+> 如果将`private_class_method`放到代码开头，那么Instance就无法适用`Singleton.new` 了，因为`new`只能由object自己调用（失去意义）
+>
+> 例子2
+>
+> ```ruby
+> class A
+> 
+>     StatiInstance = A.new
+>     
+>     def initialize(arg)
+>         @arg = arg
+>         @param = StatiInstance
+>         @good = 1
+>     end
+> 
+>     attr_reader :arg
+>     attr_accessor :param, :good
+>     
+> end
+> ```
+>
+> 由于`initialize`定义于`StaticInstance`后，故若试图给`StatiInstance = A.new`加上参数，则会报错，提示`A.new`接受0个参数
+>
+> - ruby中的条件、函数、类都以`end`结尾，没有`:`
+> - ruby中的`:`有特殊的用处`attr_accessor :param, :good`
+
+# Summary
+
+ruby class中的变量
+
+- object var: `@arg`
+
+  - private
+  - 访问方法：自定义函数或`attr_reader/attr_accessor :arg, :param` 
+
+- class var: `@@arg`
+
+  - private
+  - 访问方法: 自定义函数`def self.funcName(args)`
+
+- class常量
+
+  - public
+  - 名称必须大写开头
+  - 访问方法`ClassName::Instance`
+
+冒号用法
+
+> 作用有点类似于在build-in函数中列举变量
+
+```ruby
+attr_accessor :arg, :param, :hello
+private_class_method :new, :initialize
+```
+
