@@ -221,10 +221,98 @@ ruby class中的变量
 
 冒号用法
 
-> 作用有点类似于在build-in函数中列举变量
+> ~~作用有点类似于在build-in函数中列举变量~~
+>
+> 应该是添加的意思详见[动态类型定义](#动态类型定义)
 
 ```ruby
 attr_accessor :arg, :param, :hello
 private_class_method :new, :initialize
 ```
 
+# Data Model in Ruby
+
+## 万物皆对象，所有操作皆方法调用
+
+> every thing is object, every operation is method call
+
+- 所有值都是对象引用
+
+- 所用对对象的操作都是调用对象的方法
+
+  ```ruby
+  3 + 4
+  #其实也是方法的语法糖
+  #方法名是+
+  3.+(4)
+  ```
+
+- `nil`也是**对象**
+  - 和java中的`null`不一样，`null`不是对象
+  - 用于表示没有数据
+  - `nil`中也包括一些方法
+    - `nil.nil?`
+  - `nil`和`false`等价
+
+- 所有定义的方法都是类的一部分
+- Top-level methods会被加入到`Object`类中
+  - `Object`是所有类的父类
+  - 故Top-level methods会加入到所有类中（前提不被覆盖）
+
+> 在irb输入`self.class`会返回`Object`
+
+## 反射
+
+所有对象都有类似以下的方法
+
+- `methods`
+  - 对象有哪些方法
+- `class`
+  - 对象是什么类的
+
+> 反射：运行时查询程序的状态如：对象类型、有哪些方法
+
+```
+3.class
+=> Integer
+3.methods - nil.methods
+=> .... [Integer has, nil doesn't]
+3.class
+=> Class
+3.class.Class
+=> Class
+```
+
+## 动态类型定义
+
+运行时改变class的定义
+
+- 直接定义一个相同名称的类并且改变其结构
+
+- 在类型定义改变后，所有该类型的对象也将改变，就算是之前定义的
+  - 通过反射实现
+
+```
+a = 3
+# 向Integer类中动态加入一个方法double
+class Integer
+ 	def double
+		self + self
+	end
+end
+=> :double #返回值是这个，说明:应该指明添加的意思
+a.double #现在之前定义的a也有double方法了
+
+# 覆盖了Integer中原有的+
+class Integer
+	def + x
+		self * x
+  end
+end
+```
+
+> 许多oop语言中是没有这个特性的
+>
+> 这些动态特性容易引起语义问题
+
+# 鸭子类型
