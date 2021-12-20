@@ -547,3 +547,46 @@ trade-offs
   - more code reuse?
 
 > closure和object是不一样的，最大的不同点在于动态绑定
+
+> 个人理解：动态绑定，和`self`相关的环境是dynamic scope，其余环境则是lexical scope
+>
+> 故课中说
+>
+> > *"make self exceptional"*
+>
+> 举个ruby中例子
+>
+> ```ruby
+> class A
+>     Instance = 123
+>     
+>     def m
+>         print Instance
+>         print @arg
+>         # n
+>         # 此处n会调用B中的n，造成死循环
+>     end
+> 
+>     def n
+>         2
+>     end
+> end
+> 
+> class B < A
+>     Instance = 456
+> 
+>     def initialize
+>         @arg = 1
+>     end
+> 
+>     def n
+>         m
+>     end
+> end
+> 
+> B.new.m
+> ## 会输出
+> ## 123 #静态变量为lexical scope，为A中的Instance
+> ## 1 #field由于和self相关，则是self中的field
+> ```
+
