@@ -158,9 +158,17 @@ end
 
 > 如何在不知道类型的情况下调用对应类型的方法
 
-### double-dispatch
+### double-dispatch （visitor pattern）
 
+> 补充阅读：
+>
+> [也谈double dispatch(双分派)::Visitor 模式 - k_eckel's mindview - 博客园 (cnblogs.com)](https://www.cnblogs.com/k-eckel/articles/205627.html)
+>
 > [Double Dispatch讲解与实例-面试题 - 霍旭东 - 博客园 (cnblogs.com)](https://www.cnblogs.com/HQFZ/p/4942561.html)
+
+以下示例中应该展示的是
+
+使用Visitor设计模型，在单分语言中实现双分功能
 
 ```ruby
 class Int < Value
@@ -321,7 +329,11 @@ a.add_values(b);
    }
    ```
 
-   其中引用类型为A的instance在调用m时会返回2而不是1，这便是dynamic dispatch
+   ~~其中引用类型为A的instance在调用m时会返回2而不是1，这便是dynamic dispatch~~
+
+   2021-12-24 修正
+
+   上述理解一定是错误的，dynamic dispatch应该使所有OOP语言的共性，无论有没有类型系统，而上述理解直接限制了语言一定有类型系统，故其一定错误。
 
 2. 什么是double dispatch?
 
@@ -364,3 +376,7 @@ a.add_values(b);
    2. 第二次dynamic dispatch则是在`add_values`方法内部，`v`变量调用自身的`add`方法而不是传入时`v`的类型`Value`中的方法
 
 3. multiple dispatch (multimethods)
+
+   语言在调用方法时，除了对象会dynamic dispatch，其参数也会dynamic dispatch，故在这些语言中无需手动实现double dispatch。
+
+   > double dispatch可以理解为显式的编码，在不支持多分的语言中实现多分。

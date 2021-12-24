@@ -491,7 +491,7 @@ ColorPoint.new instance_of? Point
 
 > java中的`instanceof`相当于Ruby中的`is_a?`
 
-# 覆盖 & Dynamic Dispatch(动态绑定)
+# 覆盖 & Dynamic Dispatch
 
 > 覆盖overriding是什么就不解释了
 
