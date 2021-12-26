@@ -416,4 +416,4 @@ end
 
 # exp.preprocess_prog.eval_prog []
 
-exp = Intersect.new(LineSegement.new(0,0,1,2), LineSegement.new(0,0,2,4))
+# exp = Intersect.new(LineSegment.new(0,0,1,2), LineSegment.new(0,0,2,4))
