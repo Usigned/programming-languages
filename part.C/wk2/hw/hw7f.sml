@@ -192,7 +192,7 @@ fun eval_prog (e,env) =
                 Point (x, y) => Point (x + dx, y + dy) |
                 Line (m, b) => Line (m, b + dx - m * dy) |
                 VerticalLine (x) => VerticalLine (x + dx) |
-                LineSegment (x1, y1, x2, y2) => LineSegment (x1, y1, x2 + dx, y2 + dy) |
+                LineSegment (x1, y1, x2, y2) => LineSegment (x1 + dx, y1 + dy, x2 + dx, y2 + dy) |
                 _ => eval_prog (Shift (dx, dy, eval_prog (e, env)), env))
 
 (* CHANGE: Add function preprocess_prog of type geom_exp -> geom_exp *)

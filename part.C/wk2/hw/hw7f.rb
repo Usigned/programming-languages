@@ -72,8 +72,6 @@ class GeometryValue
     # Addtions
 
     # default implementation of preprocess_prog
-    # just return self
-    # Expressions should override this method
     def preprocess_prog
         self
     end
@@ -82,12 +80,6 @@ class GeometryValue
     # Expressions should override this method
     def eval_prog env 
         self # all values evaluate to self
-    end
-
-    # default implementation of shift
-    # Values should override this method
-    def shift(dx, dy) 
-        Shift.new(dx, dy, self)
     end
 end
 
@@ -155,7 +147,7 @@ class Line < GeometryValue
     end
 
     def shift(dx, dy)
-        Line.new(m, b + dx - m * dy)
+        Line.new(m, b + dy - m * dx)
     end
 end
   
@@ -187,7 +179,7 @@ class LineSegment < GeometryValue
     end
 
     def shift(dx, dy)
-        LineSegement.new(x1, y1, x2 + dx, y2 + dy)
+        LineSegment.new(x1 + dx, y1 + dy, x2 + dx, y2 + dy)
     end
 
     # override preprocess_prog method
@@ -218,12 +210,12 @@ class Intersect < GeometryExpression
         @e2 = e2
     end
 
-    # override preprocess_prog method
+
     def preprocess_prog
-        Intersect.new(e1.preprocess_prog, e2.preprocess_prog)
+        Intersect.new(@e1.preprocess_prog, @e2.preprocess_prog)
     end
 
-    # override eval_prog
+
     def eval_prog env
         # TODOs
     end
@@ -239,9 +231,14 @@ class Let < GeometryExpression
         @e2 = e2
     end
 
-    # override preprocess_prog method
+
     def preprocess_prog
-        Let.new(s, e1.preprocess_prog, e2.preprocess_prog)
+        Let.new(@s, @e1.preprocess_prog, @e2.preprocess_prog)
+    end
+
+    
+    def eval_prog env
+        @e2.eval_prog([[@s, @e1.eval_prog(env)]] + env)
     end
 end
   
@@ -256,6 +253,11 @@ class Var < GeometryExpression
         raise "undefined variable" if pr.nil?
         pr[1]
     end
+
+
+    def preprocess_prog
+        self
+    end
 end
   
 class Shift < GeometryExpression
@@ -267,8 +269,18 @@ class Shift < GeometryExpression
         @e = e
     end
 
-    # override preprocess_prog method
+
     def preprocess_prog
-        Shift.new(dx, dy, e.preprocess_prog)
+        Shift.new(@dx, @dy, @e.preprocess_prog)
+    end
+
+
+    def eval_prog env
+        @e.eval_prog(env).shift(@dx, @dy)
     end
 end
+
+# test case
+exp = Let.new("s", LineSegment.new(5.0, 4.0, -5.0, -4.0), Shift.new(-1.0, -1.0, Var.new("s")))
+
+exp.preprocess_prog.eval_prog []
