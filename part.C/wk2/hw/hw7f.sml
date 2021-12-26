@@ -174,7 +174,7 @@ fun intersect (v1,v2) =
 *)
 fun eval_prog (e,env) =
     case e of
-	    NoPoints => e | 
+	    NoPoints => e (* first 5 cases are all values, so no computation *) | 
         Point _  => e | 
         Line _   => e | 
         VerticalLine _ => e | 
