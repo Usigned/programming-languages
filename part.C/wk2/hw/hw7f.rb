@@ -311,7 +311,7 @@ class LineSegment < GeometryValue
     end
 
     def intersectVerticalLine vline
-        line.intersectLineSegment self
+        vline.intersectLineSegment self
     end
 
     def intersectWithSegmentAsLineResult seg
