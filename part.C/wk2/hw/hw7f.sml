@@ -162,21 +162,6 @@ fun intersect (v1,v2) =
                     end	 | 
                     _ => raise Impossible "bad result from intersecting with a line") | 
                     _ => raise Impossible "bad call to intersect: only for shape values"
-(* 
-    preprocess expression along with every subexpressions
- *)
-fun preprocess_prog e =
-    case e of
-        LineSegment (x1, y1, x2, y2) => 
-            (case (real_close (x1, x2), real_close (y1, y2)) of
-                (true, true) => Point (x1, y1) |
-                (true, false) => if y1 > y2 then LineSegment (x2, y2, x1, y1) else e |
-                (false, _) => if x1 > x2 then LineSegment (x2, y2, x1, y1) else e |
-        Intersect (e1, e2) => Intersect (preprocess_prog e1, preprocess_prog e2) |
-        Let (s, e1, e2) => Let (s, preprocess_prog e1, preprocess_prog e2) |
-        Shift (dx, dy, e) => Shift (dx, dy, preprocess_prog e) |
-        _ => e
-
 
 (* interpreter for our language: 
    * takes a geometry expression and returns a geometry value
@@ -187,10 +172,9 @@ fun preprocess_prog e =
          * line segments are not actually points (endpoints not real close)
          * lines segment have left (or, if vertical, bottom) coordinate first
 *)
-
 fun eval_prog (e,env) =
     case e of
-	    NoPoints => e (* first 5 cases are all values, so no computation *) | 
+	    NoPoints => e | 
         Point _  => e | 
         Line _   => e | 
         VerticalLine _ => e | 
@@ -199,8 +183,8 @@ fun eval_prog (e,env) =
             (case List.find (fn (s2,v) => s=s2) env of
                 NONE => raise BadProgram("var not found: " ^ s) | 
                 SOME (_,v) => v) | 
-                Let(s,e1,e2) => eval_prog (e2, ((s, eval_prog(e1,env)) :: env)) | 
-                Intersect(e1,e2) => intersect(eval_prog(e1,env), eval_prog(e2, env)) |
+        Let(s,e1,e2) => eval_prog (e2, ((s, eval_prog(e1,env)) :: env)) | 
+        Intersect(e1,e2) => intersect(eval_prog(e1,env), eval_prog(e2, env)) |
         (* CHANGE: Add a case for Shift expressions *)
         Shift (dx, dy, e) =>
             (case e of
@@ -210,6 +194,21 @@ fun eval_prog (e,env) =
                 VerticalLine (x) => VerticalLine (x + dx) |
                 LineSegment (x1, y1, x2, y2) => LineSegment (x1, y1, x2 + dx, y2 + dy) |
                 _ => eval_prog (Shift (dx, dy, eval_prog (e, env)), env))
-        (* CHANGE: Add function preprocess_prog of type geom_exp -> geom_exp *)
+
+(* CHANGE: Add function preprocess_prog of type geom_exp -> geom_exp *)
+(* 
+    preprocess expression along with every subexpressions
+ *)
+fun preprocess_prog e =
+    case e of
+        LineSegment (x1, y1, x2, y2) => 
+            (case (real_close (x1, x2), real_close (y1, y2)) of
+                (true, true) => Point (x1, y1) |
+                (true, false) => if y1 > y2 then LineSegment (x2, y2, x1, y1) else e |
+                (false, _) => if x1 > x2 then LineSegment (x2, y2, x1, y1) else e) |
+        Intersect (e1, e2) => Intersect (preprocess_prog e1, preprocess_prog e2) |
+        Let (s, e1, e2) => Let (s, preprocess_prog e1, preprocess_prog e2) |
+        Shift (dx, dy, e) => Shift (dx, dy, preprocess_prog e) |
+        _ => e
 
 
