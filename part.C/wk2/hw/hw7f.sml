@@ -160,8 +160,8 @@ fun intersect (v1,v2) =
                                         else LineSegment(bXstart,bYstart,aXend,aYend) (* overlapping *)
                             end	
                     end	 | 
-                    _ => raise Impossible "bad result from intersecting with a line") | 
-                    _ => raise Impossible "bad call to intersect: only for shape values"
+                _ => raise Impossible "bad result from intersecting with a line") | 
+        _ => raise Impossible "bad call to intersect: only for shape values"
 
 (* interpreter for our language: 
    * takes a geometry expression and returns a geometry value

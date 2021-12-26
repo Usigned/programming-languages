@@ -77,7 +77,6 @@ class GeometryValue
     end
 
     # default implementation of eval_prog
-    # Expressions should override this method
     def eval_prog env 
         self # all values evaluate to self
     end
@@ -126,6 +125,15 @@ class Point < GeometryValue
   
     # Note: You may want a private helper method like the local
     # helper function inbetween in the ML code
+
+    # helper function
+    private
+    def inbetween(v, end1, end2)
+        epsilon = GeometryExpression::Epsilon
+        (end1 - epsilon <= v and v <= end2 + epsilon) or (end2 - epsilon <= v  and v <= end1 + epsilon)
+    end
+
+    public
     attr_reader :x, :y
     def initialize(x,y)
         @x = x
@@ -134,7 +142,43 @@ class Point < GeometryValue
 
     def shift(dx, dy)
         Point.new(x + dx, y + dy)
-    end    
+    end
+    
+    def intersect other
+        other.intersectPoint self
+    end
+
+    def intersectPoint p
+        if real_close_point(self, p)
+            self
+        else
+            NoPoints.new
+        end
+    end
+
+    def intersectLine line
+        if real_close(y, line.m * x + line.b)
+            self
+        else
+            NoPoints.new
+        end
+    end
+
+    def intersectVerticalLine vline
+        if real_close(x, vline.x)
+            self
+        else
+            NoPoints.new
+        end
+    end
+
+    def intersectWithSegmentAsLineResult seg
+        if inbetween(x, seg.x1, seg.x2) and inbetween(y, seg.y1, seg.y2)
+            self
+        else
+            NoPoints.new
+        end
+    end
 end
 
 class Line < GeometryValue
@@ -149,6 +193,36 @@ class Line < GeometryValue
     def shift(dx, dy)
         Line.new(m, b + dy - m * dx)
     end
+
+    def intersect other
+        other.intersectLine self
+    end
+
+    def intersectPoint p
+        p.intersectLine self
+    end
+
+    def intersectLine line
+        if real_close(self.m, line.m)
+            if real_close(self.b, line.b)
+                self
+            else
+                NoPoints.new
+            end
+        else
+            x = (line.b - self.b) / (self.m - line.m)
+            y = x * self.m + self.b
+            Point.new(x, y)
+        end
+    end
+
+    def intersectVerticalLine vline
+        Point.new(vline.x , self.m * vline.x + self.b)
+    end
+
+    def intersectWithSegmentAsLineResult seg
+        seg
+    end
 end
   
 class VerticalLine < GeometryValue
@@ -161,6 +235,30 @@ class VerticalLine < GeometryValue
 
     def shift(dx, dy)
         VerticalLine.new(x + dx)
+    end
+
+    def intersect other
+        other.intersectVerticalLine self
+    end
+
+    def intersectPoint p
+        p.intersectVerticalLine self
+    end
+
+    def intersectLine line
+        line.intersectVerticalLine self
+    end
+
+    def intersectVerticalLine vline
+        if real_close(vline.x, self.x)
+            self
+        else
+            NoPoints.new
+        end
+    end
+
+    def intersectWithSegmentAsLineResult seg
+        seg
     end
 end
   
@@ -198,6 +296,46 @@ class LineSegment < GeometryValue
             self
         end     
     end
+
+    # Intersection
+    def intersect other
+        other.intersectLineSegment self
+    end
+
+    def intersectWithSegmentAsLineResult seg
+        # this algorithm is basicly copied from the provided SML code
+        seg, seg2 = seg, self
+        x1start, y1start, x1end, y1end = pattern_matching seg
+        x2start, y2start, x2end, y2end = pattern_matching seg2
+        if real_close(x1start, x1end)
+            aXstart,aYstart,aXend,aYend = pattern_matching (if y1start < y2start then seg else seg2 end)
+            bXstart,bYstart,bXend,bYend = pattern_matching (if y1start < y2start then seg2 else seg end)
+            if real_close(aYend,bYstart)
+                Point.new(aXend,aYend)
+            elsif aYend > bYend
+                LineSegment.new(bXstart,bYstart,bXend,bYend)
+            else
+                LineSegment.new(bXstart,bYstart,aXend,aYend)
+            end
+        else
+            aXstart,aYstart,aXend,aYend = pattern_matching (if x1start < x2start then seg else seg2 end)
+            bXstart,bYstart,bXend,bYend = pattern_matching (if x1start < x2start then seg2 else seg end)
+            if real_close(aXend,bXstart)
+                Point.new(aXend,aYend)
+            elsif aXend < bXstart
+                NoPoints.new
+            elsif aXend > bXend
+                LineSegment.new(bXstart,bYstart,bXend,bYend)
+            else
+                LineSegment.new(bXstart,bYstart,aXend,aYend)
+            end
+        end
+    end
+
+    private
+    def pattern_matching seg
+        [seg.x1, seg.y1, seg.x2, seg.y2]
+    end
 end
   
 # Note: there is no need for getter methods for the non-value classes
@@ -210,14 +348,12 @@ class Intersect < GeometryExpression
         @e2 = e2
     end
 
-
     def preprocess_prog
         Intersect.new(@e1.preprocess_prog, @e2.preprocess_prog)
     end
 
-
     def eval_prog env
-        # TODOs
+        @e1.eval_prog(env).intersect(@e2.eval_prog(env))
     end
 end
   
@@ -231,12 +367,10 @@ class Let < GeometryExpression
         @e2 = e2
     end
 
-
     def preprocess_prog
         Let.new(@s, @e1.preprocess_prog, @e2.preprocess_prog)
     end
-
-    
+  
     def eval_prog env
         @e2.eval_prog([[@s, @e1.eval_prog(env)]] + env)
     end
@@ -254,7 +388,6 @@ class Var < GeometryExpression
         pr[1]
     end
 
-
     def preprocess_prog
         self
     end
@@ -269,11 +402,9 @@ class Shift < GeometryExpression
         @e = e
     end
 
-
     def preprocess_prog
         Shift.new(@dx, @dy, @e.preprocess_prog)
     end
-
 
     def eval_prog env
         @e.eval_prog(env).shift(@dx, @dy)
@@ -281,6 +412,8 @@ class Shift < GeometryExpression
 end
 
 # test case
-exp = Let.new("s", LineSegment.new(5.0, 4.0, -5.0, -4.0), Shift.new(-1.0, -1.0, Var.new("s")))
+# exp = Let.new("s", LineSegment.new(5.0, 4.0, -5.0, -4.0), Shift.new(-1.0, -1.0, Var.new("s")))
 
-exp.preprocess_prog.eval_prog []
+# exp.preprocess_prog.eval_prog []
+
+exp = Intersect.new(LineSegement.new(0,0,1,2), LineSegement.new(0,0,2,4))
