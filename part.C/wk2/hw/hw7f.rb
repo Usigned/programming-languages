@@ -149,7 +149,7 @@ class Point < GeometryValue
     end
 
     def intersectPoint p
-        if real_close_point(self, p)
+        if real_close_point(self.x, self.y, p.x, p.y)
             self
         else
             NoPoints.new
@@ -302,6 +302,18 @@ class LineSegment < GeometryValue
         other.intersectLineSegment self
     end
 
+    def intersectPoint p
+        p.intersectLineSegment self    
+    end
+
+    def intersectLine line
+        line.intersectLineSegment self
+    end
+
+    def intersectVerticalLine vline
+        line.intersectLineSegment self
+    end
+
     def intersectWithSegmentAsLineResult seg
         # this algorithm is basicly copied from the provided SML code
         seg, seg2 = seg, self
@@ -410,10 +422,3 @@ class Shift < GeometryExpression
         @e.eval_prog(env).shift(@dx, @dy)
     end
 end
-
-# test case
-# exp = Let.new("s", LineSegment.new(5.0, 4.0, -5.0, -4.0), Shift.new(-1.0, -1.0, Var.new("s")))
-
-# exp.preprocess_prog.eval_prog []
-
-# exp = Intersect.new(LineSegment.new(0,0,1,2), LineSegment.new(0,0,2,4))

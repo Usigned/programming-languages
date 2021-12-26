@@ -190,7 +190,7 @@ fun eval_prog (e,env) =
             (case e of
                 NoPoints => e |
                 Point (x, y) => Point (x + dx, y + dy) |
-                Line (m, b) => Line (m, b + dx - m * dy) |
+                Line (m, b) => Line (m, b + dy - m * dx) |
                 VerticalLine (x) => VerticalLine (x + dx) |
                 LineSegment (x1, y1, x2, y2) => LineSegment (x1 + dx, y1 + dy, x2 + dx, y2 + dy) |
                 _ => eval_prog (Shift (dx, dy, eval_prog (e, env)), env))
@@ -210,5 +210,3 @@ fun preprocess_prog e =
         Let (s, e1, e2) => Let (s, preprocess_prog e1, preprocess_prog e2) |
         Shift (dx, dy, e) => Shift (dx, dy, preprocess_prog e) |
         _ => e
-
-
