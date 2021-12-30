@@ -136,3 +136,153 @@ null本意应该表示没有字段的数据，按照"width" subtyping的原则�
 - 这样设计有时可以带来方便，但是同样会没有类型系统静态检查的支持
 
   > 所以java程序员会经常遇到null指针异常
+# Function Subtyping
+
+> 1. subtype has more fields.
+> 2. you can require less and return more.
+
+1. 返回值
+
+   如果`ta <: tb`，那么`t->ta <: t->tb`
+
+   - `t->ta`函数会比`t->tb`函数返回更多的fields
+
+2. 参数
+
+   > 不能允许以下规则
+   >
+   > - 如果`ta <: tb`，那么`ta->t <: tb->t`，应该子函数需求了更多的fields
+
+   如果`tb <: ta`，那么`ta->t <: tb->t`
+
+   - 子函数`ta->t`比父函数`tb->t`需求更少的fields
+
+3. 综合
+
+   如果`t3 <: t1`且`t2 <: t4`
+
+   - 那么`t1->t2 <: t3->t4`
+
+   > require less, return more
+
+# OOP Subtyping
+
+OOP语言中
+
+- 一般使用class名称作为type名称
+- subclass同时也是subtype
+- 替换原则：subclass的实例可以被用于superclass的地方
+
+> 这样引入了一些限制：如果一个类Subclass其具有Superclass所有的field，但是其没有显式的继承Superclass，从类型系统角度上来讲，将Subclass视为Superclass的子类是可以的，但在一般的OOP语言中则要求Subclass要显示的继承Superclass，才能将其视为子类型。
+
+**Actual Java**
+
+- 类型是class名，同时subtyping是显式的subclass
+- subclass能够添加fields和methods
+- 如果`ta <: tb`，那么subclass能够通过定义`t->ta`覆盖方法`t->tb`
+  - 但无法通过`tb->t`来覆盖方法`ta->t`，相反其会触发静态重载从而声明一个相同名称的不同方法
+  - 导致subtyping规则更加严格（是原规中的一个子集）
+
+**Example**
+
+```java
+class SuperClass {
+    public SuperClass get(SuperClass s) {
+        return null;
+    }
+}
+
+class SubClass extends SuperClass {
+
+    // Override
+    public SubClass get(SuperClass s) {
+        return null;
+    }
+
+    // OverLoad
+    public SuperClass get(SubClass subClass) {
+        return null;
+    }
+}
+```
+
+# Generics vs Subtyping
+
+##  **Generics**
+
+type variables, parametric polymorphism
+
+- 通用函数
+
+  ```
+  fun compose (g, h) = fn x => g (h x)
+  (* compose : ('b -> 'c) * ('a -> 'b) -> ('a -> 'c))
+  ```
+
+- generic collections
+
+  ```
+  val length : 'a list -> int
+  val map : ('a -> 'b) -> 'a list -> 'b list
+  val swap : ('a * 'b) -> ('b * 'a)
+  ```
+
+- many other idioms
+
+- 一般使用场景：当类型可能是**任意类型**，但是多个类型需要是**同一类型**。
+
+> 使用subtyping在containers中是非常不方便
+>
+> - 一般需要使用Object + 很多向下转型
+
+## Subtyping
+
+subtype polymorphism
+
+- 代码中需要类型Foo，但是也可以提供比Foo更多的信息
+  - 比如ColorPoint和Point
+- GUI中经常会用到
+
+## Bounded Polymorphism
+
+generic和subtyping结合：使用subtyping来限制generic的多态
+
+- 用例：任何是`T1`子类型的类型，任何可比较的类型...
+- bounded polymorphism
+
+**Example**
+
+```java
+List<Point> inCircle(List<Point> pts, Point center, double r) { ... }
+```
+
+- 上述方法无法处理`List<ColorPoint>`
+
+- **因为`List<ColorPoint>`不是`List<Point>`的子类型**
+  - **depth subtyping是不可靠的！**
+
+1. 使用泛型
+
+   ```java
+   List<T> inCircle(List<T> pts, Point center, double r) {...}
+   ```
+
+   - 此时`inCircle`方法能处理`List<ColorPoint>`
+   - 但其方法体无法合理的实现，因为对`T`的类型没有任何限制
+
+2. Bounds
+
+   ```java
+   List<T> inCircle(List<T> pts, Point center, double r) //where T <: Point
+   {...}
+   ```
+
+   - 添加限制：`T <: Point`
+   - java syntax
+
+   ```java
+   <T extends Point> List<T> inCircle(List<T> pts, Point center, double r) {...}
+   ```
+
+   
+
