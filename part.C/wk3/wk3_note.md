@@ -83,3 +83,56 @@
 > 如果fields是**不可变的**，那么depth subtyping是**可靠的**
 >
 > - setters, depth subtyping, soundness - 三选二
+
+# Java中的subtyping
+
+```java
+class Point {}
+
+class ColorPoint extends Point {
+  int color = 1;
+}
+
+class Test {
+  static void set(Point[] ps) {
+    ps[0] = new Point(); // can throw exception
+  }
+  
+  public static void main(String[] args) {
+    ColorPoint[] cps = new ColorPoint[10];
+    set(cps); //不合适的depth subtyping
+    ColorPoint cp = cps[0]; //运行时不会出错
+    c.color; //运行时不会出错
+  }
+}
+```
+
+程序
+
+1. 声明两个类`Point`和`ColorPoint`，且`ColorPoint <: Point`
+
+2. 创建一个方法`set`，且接受一个`Point`数组，并将其中一个元素赋值
+
+3. 新建一个`ColorPoint`的数组，并用其调用`set`方法
+
+结果：上述程序**可以通过类型检查**，但是会在运行时抛出异常`ArrayStoreException`
+
+这里属于Java中的**Depth Subtyping**，由于数组是可变的，同时又要保证类型系统的可靠性，故Java选择抛出运行时异常
+
+1. java中数组的读取不会出现问题
+   - 若`e1`类型为`t[]`，那么`e1[e2]`永远会返回`t`的子类
+
+2. java中赋值可能出现问题
+   - `e1[e2] = e3`可能失败，即使`e1`类型为`t[]`，`e3`类型为`t`
+   - 运行时检查数组元素的类型，并且不允许存子类型
+   - 没有类型系统的支持
+
+## null
+
+null本意应该表示没有字段的数据，按照"width" subtyping的原则，其应该是所有类型的父类型
+
+- 然而在Java中null是所有类型的子类型，即可以`String s = null;`
+
+- 这样设计有时可以带来方便，但是同样会没有类型系统静态检查的支持
+
+  > 所以java程序员会经常遇到null指针异常
