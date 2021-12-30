@@ -94,7 +94,7 @@ PL中的类型系统一般被设计为**可靠但不完备的**。
 
 - Fancy features比如泛型，一般用来减少伤及无辜的情况发生(fewer false positives)
 
-- 可靠性，完备性和类型检测能在有限时间内停止是不可兼得的
+- **可靠性，完备性和类型检测能在有限时间内停止是不可兼得的**
   - theorem computation 
 
 ## Weak Typing
