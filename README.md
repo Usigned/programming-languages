@@ -29,3 +29,17 @@ lang: Racket
 
 - static checking
 - static vs dynamic typing
+
+Part.C
+
+lang: Ruby
+
+- Ruby语法
+- oop
+- dynamic dispatch
+- oop vs functional decompostion
+- double dipatch
+- 多继承
+- mixins
+- interface
+- subtyping vs generic
